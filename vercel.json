@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/auto-cancel",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/checkin-reminder",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}

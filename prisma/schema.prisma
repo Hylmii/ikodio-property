@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  TENANT
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
+  TWITTER
+}
+
+enum OrderStatus {
+  WAITING_PAYMENT
+  WAITING_CONFIRMATION
+  CONFIRMED
+  CANCELLED
+}
+
+enum CancellationReason {
+  USER_CANCELLED
+  TENANT_CANCELLED
+  PAYMENT_TIMEOUT
+}
+
+// User Model (untuk kedua role: USER dan TENANT)
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  password      String?       // null jika social login
+  name          String
+  phone         String?
+  profileImage  String?
+  role          UserRole      @default(USER)
+  provider      AuthProvider  @default(EMAIL)
+  isVerified    Boolean       @default(false)
+  verificationToken String?   @unique
+  verificationExpiry DateTime?
+  resetToken    String?       @unique
+  resetExpiry   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  bookings      Booking[]
+  reviews       Review[]
+  
+  // Tenant specific relations (jika role = TENANT)
+  properties    Property[]    // properties yang dimiliki tenant
+  categories    Category[]    // categories yang dibuat tenant
+  tenantOrders  Booking[]     @relation("TenantOrders") // orders untuk properties milik tenant
+  reviewReplies ReviewReply[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([verificationToken])
+  @@index([resetToken])
+}
+
+// Property Category
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  tenantId    String
+  tenant      User       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  properties  Property[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@index([tenantId])
+}
+
+// Property Model
+model Property {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  address     String
+  city        String
+  province    String
+  latitude    Float?
+  longitude   Float?
+  images      String[] // array of image URLs
+  
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  
+  tenantId    String
+  tenant      User     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  rooms       Room[]
+  reviews     Review[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([city])
+}
+
+// Room Model
+model Room {
+  id          String   @id @default(cuid())
+  name        String   // type/name of room (e.g., "Deluxe Room", "Standard Room")
+  description String   @db.Text
+  basePrice   Decimal  @db.Decimal(10, 2) // harga dasar
+  capacity    Int      // jumlah orang maksimal
+  images      String[] // array of image URLs
+  
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  peakSeasonRates PeakSeasonRate[]
+  bookings        Booking[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([propertyId])
+}
+
+// Peak Season / Special Pricing
+model PeakSeasonRate {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  startDate   DateTime
+  endDate     DateTime
+  
+  // Pricing bisa berupa nominal atau persentase
+  priceType   String   // "FIXED" atau "PERCENTAGE"
+  priceValue  Decimal  @db.Decimal(10, 2) // nilai harga atau persentase
+  
+  reason      String?  // alasan (e.g., "Lebaran Holiday", "Christmas")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([roomId])
+  @@index([startDate, endDate])
+}
+
+// Booking / Transaction Model
+model Booking {
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique // nomor order unik
+  
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  
+  tenantId        String        // denormalisasi untuk query cepat
+  tenant          User          @relation("TenantOrders", fields: [tenantId], references: [id], onDelete: Restrict)
+  
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  duration        Int           // jumlah hari
+  numberOfGuests  Int
+  
+  totalPrice      Decimal       @db.Decimal(10, 2)
+  
+  status          OrderStatus   @default(WAITING_PAYMENT)
+  
+  paymentProof    String?       // URL bukti transfer
+  paymentUploadedAt DateTime?
+  paymentDeadline DateTime      // 1 jam setelah booking dibuat
+  
+  confirmedAt     DateTime?
+  cancelledAt     DateTime?
+  cancellationReason CancellationReason?
+  
+  // Email reminder flags
+  confirmationEmailSent Boolean @default(false)
+  reminderEmailSent     Boolean @default(false)
+  
+  review          Review?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([userId])
+  @@index([roomId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([bookingNumber])
+  @@index([paymentDeadline])
+  @@index([checkInDate])
+}
+
+// Review Model
+model Review {
+  id          String   @id @default(cuid())
+  
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  rating      Int      // 1-5
+  comment     String   @db.Text
+  
+  reply       ReviewReply?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([propertyId])
+  @@index([bookingId])
+}
+
+// Review Reply (dari Tenant)
+model ReviewReply {
+  id          String   @id @default(cuid())
+  
+  reviewId    String   @unique
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  tenantId    String
+  tenant      User     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  comment     String   @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([reviewId])
+  @@index([tenantId])
+}
