@@ -6,9 +6,11 @@ Platform penyewaan properti modern yang dibangun dengan Next.js 15, TypeScript, 
 
 ### ✅ Untuk Pengguna (User)
 - Autentikasi lengkap (Register, Login, Verify Email, Reset Password)
+- **Social Login (Google, Facebook, Twitter/X)** 🆕
 - Pencarian & filter properti (kota, sorting, pagination)
 - Detail properti dengan booking system
-- Upload bukti pembayaran
+- **Payment Gateway Integration (Midtrans)** 🆕
+- Upload bukti pembayaran (manual)
 - Review properti setelah check-out
 - Manajemen profile dengan foto
 - Riwayat transaksi dengan pencarian
@@ -19,6 +21,7 @@ Platform penyewaan properti modern yang dibangun dengan Next.js 15, TypeScript, 
 - CRUD Kamar dengan pricing
 - Peak Season Rates management
 - Manajemen pesanan (konfirmasi/reject)
+- **Review Management (View & Reply)** 🆕
 - Sales Report dengan export CSV
 - Property Calendar availability
 - Filter dan pencarian advanced
@@ -26,6 +29,7 @@ Platform penyewaan properti modern yang dibangun dengan Next.js 15, TypeScript, 
 ### ✅ Automasi
 - Auto-cancel order setelah 1 jam (cron job)
 - Email reminder H-1 check-in (cron job)
+- **Payment webhook handler (Midtrans)** 🆕
 - Email notifications lengkap
 
 ## 🛠️ Tech Stack
@@ -33,7 +37,8 @@ Platform penyewaan properti modern yang dibangun dengan Next.js 15, TypeScript, 
 - Next.js 15 + React 19 + TypeScript 5
 - Tailwind CSS 4 + Radix UI
 - Prisma ORM + PostgreSQL
-- NextAuth v5
+- NextAuth v5 (with OAuth: Google, Facebook, Twitter)
+- Midtrans Payment Gateway
 - Nodemailer
 
 ## 📋 Installation
@@ -49,6 +54,12 @@ The `.env` file is already configured with **Railway PostgreSQL** connection:
 ```env
 DATABASE_URL="postgresql://postgres:tAlxENjUvGsPxgKSaBBzoaOCMNuKmxhU@nozomi.proxy.rlwy.net:43063/railway"
 ```
+
+**Optional Configuration:**
+- Social Login (Google, Facebook, Twitter) - See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+- Payment Gateway (Midtrans) - See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+
+For detailed setup instructions, refer to [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 
 ### 3. Setup Database Schema (First time only)
 ```bash

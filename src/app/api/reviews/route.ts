@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
             select: {
               id: true,
               name: true,
-              profilePicture: true,
+              profileImage: true,
             },
           },
           reply: true,
@@ -110,15 +110,15 @@ export async function POST(req: NextRequest) {
 
     // Check if booking is completed (checkout date has passed)
     const now = new Date();
-    if (booking.checkOut > now) {
+    if (booking.checkOutDate > now) {
       return NextResponse.json(
         { success: false, error: 'Review hanya dapat dibuat setelah checkout' },
         { status: 400 }
       );
     }
 
-    // Check if booking status is CONFIRMED or COMPLETED
-    if (booking.status !== 'CONFIRMED' && booking.status !== 'COMPLETED') {
+    // Check if booking status is CONFIRMED
+    if (booking.status !== 'CONFIRMED') {
       return NextResponse.json(
         { success: false, error: 'Review hanya dapat dibuat untuk booking yang telah dikonfirmasi' },
         { status: 400 }
@@ -151,19 +151,13 @@ export async function POST(req: NextRequest) {
           select: {
             id: true,
             name: true,
-            profilePicture: true,
+            profileImage: true,
           },
         },
       },
     });
 
-    // Update booking status to COMPLETED if not already
-    if (booking.status === 'CONFIRMED') {
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: { status: 'COMPLETED' },
-      });
-    }
+    // Note: Status tetap CONFIRMED karena tidak ada status COMPLETED di enum
 
     return NextResponse.json({
       success: true,
@@ -173,7 +167,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Data tidak valid', details: error.errors },
+        { success: false, error: 'Data tidak valid', details: error.issues },
         { status: 400 }
       );
     }

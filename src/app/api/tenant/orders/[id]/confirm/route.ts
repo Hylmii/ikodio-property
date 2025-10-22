@@ -5,9 +5,10 @@ import { sendBookingConfirmationEmail } from '@/lib/email/templates';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -18,7 +19,7 @@ export async function PUT(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: true,
         room: {
@@ -54,10 +55,10 @@ export async function PUT(
 
     // Update booking status
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: 'CONFIRMED',
-        confirmationSentAt: new Date(),
+        confirmationEmailSent: true,
       },
       include: {
         user: true,
@@ -70,24 +71,22 @@ export async function PUT(
     });
 
     // Send confirmation email
-    if (!updatedBooking.confirmationSentAt) {
+    if (!updatedBooking.confirmationEmailSent) {
       await sendBookingConfirmationEmail(
         updatedBooking.user.email,
         updatedBooking.user.name || 'User',
-        {
-          bookingNumber: updatedBooking.bookingNumber,
-          propertyName: updatedBooking.room.property.name,
-          roomName: updatedBooking.room.name,
-          checkIn: updatedBooking.checkIn,
-          checkOut: updatedBooking.checkOut,
-          guests: updatedBooking.guests,
-          totalPrice: updatedBooking.finalPrice,
-        }
+        updatedBooking.bookingNumber,
+        updatedBooking.room.property.name,
+        updatedBooking.room.name,
+        updatedBooking.checkInDate.toISOString(),
+        updatedBooking.checkOutDate.toISOString(),
+        updatedBooking.numberOfGuests.toString(),
+        Number(updatedBooking.totalPrice).toString()
       );
 
       await prisma.booking.update({
-        where: { id: params.id },
-        data: { confirmationSentAt: new Date() },
+        where: { id },
+        data: { confirmationEmailSent: true },
       });
     }
 

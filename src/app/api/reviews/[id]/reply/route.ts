@@ -6,9 +6,10 @@ import { z } from 'zod';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -23,7 +24,7 @@ export async function POST(
 
     // Check if review exists
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         property: {
           select: {
@@ -62,7 +63,7 @@ export async function POST(
     const reply = await prisma.reviewReply.create({
       data: {
         comment: validatedData.comment,
-        reviewId: params.id,
+        reviewId: id,
         tenantId: session.user.id,
       },
     });
@@ -75,7 +76,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Data tidak valid', details: error.errors },
+        { success: false, error: 'Data tidak valid', details: error.issues },
         { status: 400 }
       );
     }

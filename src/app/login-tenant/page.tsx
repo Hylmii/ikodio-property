@@ -32,17 +32,28 @@ export default function LoginTenantPage() {
       });
 
       if (result?.error) {
+        // Check if error is about unverified email
+        const isUnverifiedError = result.error.includes('belum diverifikasi');
+        
         toast({
           title: 'Login Gagal',
           description: result.error,
           variant: 'destructive',
+          action: isUnverifiedError ? (
+            <button
+              onClick={() => router.push('/resend-verification')}
+              className="text-xs underline"
+            >
+              Kirim Ulang
+            </button>
+          ) : undefined,
         });
       } else {
         toast({
           title: 'Login Berhasil',
           description: 'Selamat datang kembali!',
         });
-        router.push('/dashboard');
+        router.push('/tenant/dashboard');
         router.refresh();
       }
     } catch (error) {
@@ -115,6 +126,12 @@ export default function LoginTenantPage() {
               Belum punya akun?{' '}
               <Link href="/register-tenant" className="text-primary hover:underline font-medium">
                 Daftar sekarang
+              </Link>
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              Email belum terverifikasi?{' '}
+              <Link href="/resend-verification" className="text-primary hover:underline font-medium">
+                Kirim ulang link verifikasi
               </Link>
             </p>
             <p className="mt-2 text-muted-foreground">

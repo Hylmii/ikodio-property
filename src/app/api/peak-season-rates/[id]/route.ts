@@ -5,9 +5,10 @@ import { peakSeasonRateSchema } from '@/lib/validations/schemas';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -18,7 +19,7 @@ export async function PUT(
     }
 
     const rate = await prisma.peakSeasonRate.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         room: {
           include: {
@@ -54,7 +55,7 @@ export async function PUT(
     const validation = peakSeasonRateSchema.safeParse(validationData);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
@@ -64,7 +65,7 @@ export async function PUT(
     const overlappingRates = await prisma.peakSeasonRate.findMany({
       where: {
         roomId: rate.roomId,
-        id: { not: params.id },
+        id: { not: id },
         OR: [
           {
             AND: [
@@ -84,7 +85,7 @@ export async function PUT(
     }
 
     const updatedRate = await prisma.peakSeasonRate.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         startDate,
         endDate,
@@ -124,9 +125,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -137,7 +139,7 @@ export async function DELETE(
     }
 
     const rate = await prisma.peakSeasonRate.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         room: {
           include: {
@@ -162,7 +164,7 @@ export async function DELETE(
     }
 
     await prisma.peakSeasonRate.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

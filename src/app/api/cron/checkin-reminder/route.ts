@@ -42,15 +42,21 @@ export async function GET(request: Request) {
         await sendEmail({
           to: booking.user.email,
           subject: 'Reminder: Check-in Besok',
-          template: 'checkin-reminder',
-          data: {
-            userName: booking.user.name,
-            propertyName: booking.room.property.name,
-            roomName: booking.room.name,
-            checkInDate: booking.checkInDate.toISOString(),
-            address: booking.room.property.address,
-            city: booking.room.property.city,
-          },
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Reminder Check-in</h2>
+              <p>Halo ${booking.user.name},</p>
+              <p>Ini adalah pengingat bahwa check-in Anda akan dilakukan besok.</p>
+              <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Properti:</strong> ${booking.room.property.name}</p>
+                <p><strong>Kamar:</strong> ${booking.room.name}</p>
+                <p><strong>Check-in:</strong> ${new Date(booking.checkInDate).toLocaleDateString('id-ID')}</p>
+                <p><strong>Alamat:</strong> ${booking.room.property.address}, ${booking.room.property.city}</p>
+              </div>
+              <p>Pastikan Anda tiba tepat waktu. Selamat berlibur!</p>
+              <p>Terima kasih,<br>Tim ${process.env.APP_NAME || 'Ikodio Property'}</p>
+            </div>
+          `,
         });
 
         results.push({

@@ -75,25 +75,25 @@ export async function GET(req: NextRequest) {
           ...(roomId && { id: roomId }),
         },
         status: {
-          in: ['WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'CONFIRMED', 'COMPLETED'],
+          in: ['WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'CONFIRMED'],
         },
         OR: [
           {
-            checkIn: {
+            checkInDate: {
               gte: startDate,
               lte: endDate,
             },
           },
           {
-            checkOut: {
+            checkOutDate: {
               gte: startDate,
               lte: endDate,
             },
           },
           {
             AND: [
-              { checkIn: { lte: startDate } },
-              { checkOut: { gte: endDate } },
+              { checkInDate: { lte: startDate } },
+              { checkOutDate: { gte: endDate } },
             ],
           },
         ],
@@ -120,8 +120,8 @@ export async function GET(req: NextRequest) {
       
       // Find bookings that overlap with this day
       const dayBookings = bookings.filter((booking) => {
-        const checkIn = new Date(booking.checkIn);
-        const checkOut = new Date(booking.checkOut);
+        const checkIn = new Date(booking.checkInDate);
+        const checkOut = new Date(booking.checkOutDate);
         return day >= checkIn && day < checkOut;
       });
 
@@ -137,8 +137,8 @@ export async function GET(req: NextRequest) {
             ? {
                 bookingNumber: roomBooking.bookingNumber,
                 userName: roomBooking.user.name,
-                checkIn: roomBooking.checkIn,
-                checkOut: roomBooking.checkOut,
+                checkIn: roomBooking.checkInDate,
+                checkOut: roomBooking.checkOutDate,
                 status: roomBooking.status,
               }
             : null,

@@ -180,6 +180,35 @@ export function getBookingConfirmationEmailTemplate(
   `;
 }
 
+export async function sendBookingConfirmationEmail(
+  to: string,
+  name: string,
+  bookingNumber: string,
+  propertyName: string,
+  roomName: string,
+  checkIn: string,
+  checkOut: string,
+  totalPrice: string,
+  propertyRules: string
+) {
+  const html = getBookingConfirmationEmailTemplate(
+    name,
+    bookingNumber,
+    propertyName,
+    roomName,
+    checkIn,
+    checkOut,
+    totalPrice,
+    propertyRules
+  );
+  
+  return await sendEmail({
+    to,
+    subject: 'Pembayaran Dikonfirmasi - Booking Anda Berhasil',
+    html,
+  });
+}
+
 export function getCheckInReminderEmailTemplate(
   name: string,
   propertyName: string,

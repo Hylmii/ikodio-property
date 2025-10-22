@@ -93,13 +93,13 @@ export const roomSchema = z.object({
 export const peakSeasonRateSchema = z.object({
   roomId: z.string().min(1, 'Room ID wajib diisi'),
   startDate: z.date({
-    required_error: 'Tanggal mulai wajib diisi',
+    message: 'Tanggal mulai wajib diisi',
   }),
   endDate: z.date({
-    required_error: 'Tanggal selesai wajib diisi',
+    message: 'Tanggal selesai wajib diisi',
   }),
   priceType: z.enum(['FIXED', 'PERCENTAGE'], {
-    required_error: 'Tipe harga wajib dipilih',
+    message: 'Tipe harga wajib dipilih',
   }),
   priceValue: z.number().min(0, 'Nilai harga tidak boleh negatif'),
   reason: z.string().max(200, 'Alasan maksimal 200 karakter').optional(),
@@ -111,10 +111,10 @@ export const peakSeasonRateSchema = z.object({
 export const bookingSchema = z.object({
   roomId: z.string().min(1, 'Room ID wajib diisi'),
   checkInDate: z.date({
-    required_error: 'Tanggal check-in wajib diisi',
+    message: 'Tanggal check-in wajib diisi',
   }),
   checkOutDate: z.date({
-    required_error: 'Tanggal check-out wajib diisi',
+    message: 'Tanggal check-out wajib diisi',
   }),
   numberOfGuests: z.number().min(1, 'Jumlah tamu minimal 1 orang'),
 }).refine((data) => data.checkOutDate > data.checkInDate, {

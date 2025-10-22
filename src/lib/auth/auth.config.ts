@@ -1,6 +1,8 @@
 import NextAuth, { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import Facebook from 'next-auth/providers/facebook';
+import Twitter from 'next-auth/providers/twitter';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
@@ -11,6 +13,14 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
+    Facebook({
+      clientId: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    }),
+    Twitter({
+      clientId: process.env.TWITTER_CLIENT_ID,
+      clientSecret: process.env.TWITTER_CLIENT_SECRET,
+    }),
     Credentials({
       id: 'user-credentials',
       name: 'User Credentials',
@@ -19,8 +29,11 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('🔐 User Login Attempt:', credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          console.log('❌ Missing credentials');
+          throw new Error('Email dan password harus diisi');
         }
 
         const user = await prisma.user.findUnique({
@@ -30,12 +43,21 @@ export const authConfig: NextAuthConfig = {
           },
         });
 
-        if (!user || !user.password) {
-          return null;
+        console.log('👤 User found:', user ? 'Yes' : 'No');
+
+        if (!user) {
+          console.log('❌ User not found or wrong role');
+          throw new Error('Email atau password salah');
+        }
+
+        if (!user.password) {
+          console.log('❌ User has no password (social login only)');
+          throw new Error('Akun ini menggunakan social login');
         }
 
         if (!user.isVerified) {
-          throw new Error('Email belum diverifikasi');
+          console.log('❌ User not verified');
+          throw new Error('Email belum diverifikasi. Silakan cek email Anda');
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -43,9 +65,13 @@ export const authConfig: NextAuthConfig = {
           user.password
         );
 
+        console.log('🔑 Password valid:', isPasswordValid);
+
         if (!isPasswordValid) {
-          return null;
+          throw new Error('Email atau password salah');
         }
+
+        console.log('✅ Login successful for:', user.email);
 
         return {
           id: user.id,
@@ -53,6 +79,7 @@ export const authConfig: NextAuthConfig = {
           name: user.name,
           role: user.role,
           image: user.profileImage,
+          isVerified: user.isVerified,
         };
       },
     }),
@@ -64,8 +91,11 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('🏢 Tenant Login Attempt:', credentials?.email);
+        
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          console.log('❌ Missing credentials');
+          throw new Error('Email dan password harus diisi');
         }
 
         const user = await prisma.user.findUnique({
@@ -75,12 +105,21 @@ export const authConfig: NextAuthConfig = {
           },
         });
 
-        if (!user || !user.password) {
-          return null;
+        console.log('👤 Tenant found:', user ? 'Yes' : 'No');
+
+        if (!user) {
+          console.log('❌ Tenant not found or wrong role');
+          throw new Error('Email atau password salah');
+        }
+
+        if (!user.password) {
+          console.log('❌ Tenant has no password (social login only)');
+          throw new Error('Akun ini menggunakan social login');
         }
 
         if (!user.isVerified) {
-          throw new Error('Email belum diverifikasi');
+          console.log('❌ Tenant not verified');
+          throw new Error('Email belum diverifikasi. Silakan cek email Anda');
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -88,9 +127,13 @@ export const authConfig: NextAuthConfig = {
           user.password
         );
 
+        console.log('🔑 Password valid:', isPasswordValid);
+
         if (!isPasswordValid) {
-          return null;
+          throw new Error('Email atau password salah');
         }
+
+        console.log('✅ Login successful for:', user.email);
 
         return {
           id: user.id,
@@ -98,16 +141,23 @@ export const authConfig: NextAuthConfig = {
           name: user.name,
           role: user.role,
           image: user.profileImage,
+          isVerified: user.isVerified,
         };
       },
     }),
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
+      if (account?.provider === 'google' || account?.provider === 'facebook' || account?.provider === 'twitter') {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! },
         });
+
+        const providerMap: Record<string, 'GOOGLE' | 'FACEBOOK' | 'TWITTER'> = {
+          google: 'GOOGLE',
+          facebook: 'FACEBOOK',
+          twitter: 'TWITTER',
+        };
 
         if (!existingUser) {
           await prisma.user.create({
@@ -115,7 +165,7 @@ export const authConfig: NextAuthConfig = {
               email: user.email!,
               name: user.name!,
               profileImage: user.image,
-              provider: 'GOOGLE',
+              provider: providerMap[account.provider] || 'GOOGLE',
               isVerified: true,
               role: UserRole.USER,
             },
@@ -123,7 +173,10 @@ export const authConfig: NextAuthConfig = {
         } else if (!existingUser.isVerified) {
           await prisma.user.update({
             where: { email: user.email! },
-            data: { isVerified: true },
+            data: { 
+              isVerified: true,
+              profileImage: user.image || existingUser.profileImage,
+            },
           });
         }
       }
@@ -133,6 +186,7 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.isVerified = user.isVerified;
       }
       return token;
     },
@@ -140,6 +194,7 @@ export const authConfig: NextAuthConfig = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
+        session.user.isVerified = token.isVerified as boolean;
       }
       return session;
     },

@@ -1,0 +1,140 @@
+
+> ikodio-property@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.6 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.8:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 204ms
+ ✓ Ready in 1173ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 934ms
+ GET /api/auth/providers 200 in 1766ms
+ GET /api/auth/csrf 200 in 236ms
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."password", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."verificationToken", "public"."User"."verificationExpiry", "public"."User"."resetToken", "public"."User"."resetExpiry", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND "public"."User"."role" = CAST($2::text AS "public"."UserRole")) LIMIT $3 OFFSET $4
+[31m[auth][error][0m CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+    at Module.callback (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_@auth_core_41e6e0a6._.js:4314:30)
+    at async AuthInternal (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_@auth_core_41e6e0a6._.js:5148:24)
+    at async Auth (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_@auth_core_41e6e0a6._.js:5370:34)
+    at async AppRouteRouteModule.do (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:38696)
+    at async AppRouteRouteModule.handle (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:45978)
+    at async responseGenerator (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_next_746dd77e._.js:16315:38)
+    at async AppRouteRouteModule.handleResponse (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:1:187643)
+    at async handleResponse (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_next_746dd77e._.js:16377:32)
+    at async handler (/Users/hylmii/finpro-hylmixalam/ikodio-property/.next/server/chunks/node_modules_next_746dd77e._.js:16429:13)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/base-server.js:1422:9)
+    at async DevServer.renderPageComponent (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/base-server.js:1474:24)
+    at async DevServer.renderToResponseImpl (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/base-server.js:1514:32)
+    at async DevServer.pipeImpl (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/base-server.js:1025:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/next-server.js:393:17)
+    at async DevServer.handleRequestImpl (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/base-server.js:916:17)
+    at async /Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/dev/next-dev-server.js:399:20
+    at async Span.traceAsyncFn (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/dev/next-dev-server.js:395:24)
+    at async invokeRender (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/lib/router-server.js:240:21)
+    at async handleRequest (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/lib/router-server.js:437:24)
+    at async requestHandlerImpl (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/lib/router-server.js:485:13)
+    at async Server.requestListener (/Users/hylmii/finpro-hylmixalam/ikodio-property/node_modules/next/dist/server/lib/start-server.js:226:13)
+ POST /api/auth/callback/user-credentials? 200 in 621ms
+ GET /api/auth/session 200 in 233ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1233ms
+ GET / 200 in 1552ms
+ GET /api/auth/session 200 in 286ms
+ ✓ Compiled /api/properties in 305ms
+ GET /api/auth/session 200 in 322ms
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Property"."id" FROM "public"."Property" WHERE 1=1 OFFSET $1) AS "sub"
+ GET /api/auth/session 200 in 230ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE 1=1 ORDER BY "public"."Property"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."propertyId" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1,$2) OFFSET $3
+ GET /api/properties?page=1&limit=6&sortBy=createdAt 200 in 1706ms
+ ✓ Compiled middleware in 19ms
+ ✓ Compiled in 423ms
+ ✓ Compiled middleware in 7ms
+ ✓ Compiled in 299ms
+ ○ Compiling /login-user ...
+ ✓ Compiled /login-user in 1647ms
+ GET /login-user 200 in 1779ms
+ GET /login-user 200 in 122ms
+ GET /api/auth/providers 200 in 353ms
+ GET /api/auth/csrf 200 in 260ms
+🔐 User Login Attempt: hylmir25@gmail.com
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."password", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."verificationToken", "public"."User"."verificationExpiry", "public"."User"."resetToken", "public"."User"."resetExpiry", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND "public"."User"."role" = CAST($2::text AS "public"."UserRole")) LIMIT $3 OFFSET $4
+👤 User found: Yes
+🔑 Password valid: true
+✅ Login successful for: hylmir25@gmail.com
+ POST /api/auth/callback/user-credentials? 200 in 450ms
+ GET /api/auth/session 200 in 228ms
+ ○ Compiling /profile ...
+ ✓ Compiled /profile in 580ms
+ GET /profile 200 in 640ms
+ GET /profile 200 in 155ms
+ ✓ Compiled /api/user/profile in 310ms
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."createdAt" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/profile 200 in 671ms
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."createdAt" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/profile 200 in 270ms
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."password", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."verificationToken", "public"."User"."verificationExpiry", "public"."User"."resetToken", "public"."User"."resetExpiry", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."User" SET "name" = $1, "phone" = $2, "updatedAt" = $3 WHERE ("public"."User"."id" = $4 AND 1=1) RETURNING "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."isVerified"
+ PUT /api/user/profile 200 in 372ms
+ GET /api/auth/session 200 in 305ms
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."phone", "public"."User"."profileImage", "public"."User"."role"::text, "public"."User"."provider"::text, "public"."User"."isVerified", "public"."User"."createdAt" FROM "public"."User" WHERE ("public"."User"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/profile 200 in 567ms
+ GET /api/auth/session 200 in 331ms
+ GET / 200 in 44ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE 1=1 ORDER BY "public"."Property"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Property"."id" FROM "public"."Property" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."propertyId" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1,$2) OFFSET $3
+ GET /api/properties?page=1&limit=6&sortBy=createdAt 200 in 476ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE 1=1 ORDER BY "public"."Property"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Property"."id" FROM "public"."Property" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."propertyId" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1,$2) OFFSET $3
+ GET /api/properties?page=1&limit=6&sortBy=createdAt 200 in 339ms
+ ○ Compiling /properties ...
+ ✓ Compiled /properties in 633ms
+ GET /properties 200 in 682ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE 1=1 ORDER BY "public"."Property"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Property"."id" FROM "public"."Property" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."propertyId" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1,$2) OFFSET $3
+ GET /api/properties?page=1&limit=12&sortBy=createdAt 200 in 335ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE 1=1 ORDER BY "public"."Property"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Property"."id" FROM "public"."Property" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."propertyId" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1,$2) OFFSET $3
+ GET /api/properties?page=1&limit=12&sortBy=createdAt 200 in 338ms
+ ✓ Compiled /properties/[id] in 347ms
+ GET /properties/sample-apartment-1 200 in 567ms
+ ✓ Compiled /favicon.ico in 95ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 296ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE ("public"."Property"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."phone" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."description", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."images", "public"."Room"."propertyId", "public"."Room"."createdAt", "public"."Room"."updatedAt" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."PeakSeasonRate"."id", "public"."PeakSeasonRate"."roomId", "public"."PeakSeasonRate"."startDate", "public"."PeakSeasonRate"."endDate", "public"."PeakSeasonRate"."priceType", "public"."PeakSeasonRate"."priceValue", "public"."PeakSeasonRate"."reason", "public"."PeakSeasonRate"."createdAt", "public"."PeakSeasonRate"."updatedAt" FROM "public"."PeakSeasonRate" WHERE ("public"."PeakSeasonRate"."endDate" >= $1 AND "public"."PeakSeasonRate"."roomId" IN ($2,$3)) OFFSET $4
+prisma:query SELECT "public"."Review"."id", "public"."Review"."bookingId", "public"."Review"."userId", "public"."Review"."propertyId", "public"."Review"."rating", "public"."Review"."comment", "public"."Review"."createdAt", "public"."Review"."updatedAt" FROM "public"."Review" WHERE "public"."Review"."propertyId" IN ($1) ORDER BY "public"."Review"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT AVG("rating") AS "_avg$rating" FROM (SELECT "public"."Review"."rating" FROM "public"."Review" WHERE "public"."Review"."propertyId" = $1 OFFSET $2) AS "sub"
+ GET /api/properties/sample-apartment-1 200 in 1137ms
+ GET /properties 200 in 73ms
+prisma:query SELECT "public"."Property"."id", "public"."Property"."name", "public"."Property"."description", "public"."Property"."address", "public"."Property"."city", "public"."Property"."province", "public"."Property"."latitude", "public"."Property"."longitude", "public"."Property"."images", "public"."Property"."categoryId", "public"."Property"."tenantId", "public"."Property"."createdAt", "public"."Property"."updatedAt", COALESCE("aggr_selection_0_Review"."_aggr_count_reviews", 0) AS "_aggr_count_reviews" FROM "public"."Property" LEFT JOIN (SELECT "public"."Review"."propertyId", COUNT(*) AS "_aggr_count_reviews" FROM "public"."Review" WHERE 1=1 GROUP BY "public"."Review"."propertyId") AS "aggr_selection_0_Review" ON ("public"."Property"."id" = "aggr_selection_0_Review"."propertyId") WHERE ("public"."Property"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."description", "public"."Category"."tenantId", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."phone" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Room"."id", "public"."Room"."name", "public"."Room"."description", "public"."Room"."basePrice", "public"."Room"."capacity", "public"."Room"."images", "public"."Room"."propertyId", "public"."Room"."createdAt", "public"."Room"."updatedAt" FROM "public"."Room" WHERE "public"."Room"."propertyId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."PeakSeasonRate"."id", "public"."PeakSeasonRate"."roomId", "public"."PeakSeasonRate"."startDate", "public"."PeakSeasonRate"."endDate", "public"."PeakSeasonRate"."priceType", "public"."PeakSeasonRate"."priceValue", "public"."PeakSeasonRate"."reason", "public"."PeakSeasonRate"."createdAt", "public"."PeakSeasonRate"."updatedAt" FROM "public"."PeakSeasonRate" WHERE ("public"."PeakSeasonRate"."endDate" >= $1 AND "public"."PeakSeasonRate"."roomId" IN ($2,$3)) OFFSET $4
+prisma:query SELECT "public"."Review"."id", "public"."Review"."bookingId", "public"."Review"."userId", "public"."Review"."propertyId", "public"."Review"."rating", "public"."Review"."comment", "public"."Review"."createdAt", "public"."Review"."updatedAt" FROM "public"."Review" WHERE "public"."Review"."propertyId" IN ($1) ORDER BY "public"."Review"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT AVG("rating") AS "_avg$rating" FROM (SELECT "public"."Review"."rating" FROM "public"."Review" WHERE "public"."Review"."propertyId" = $1 OFFSET $2) AS "sub"
+ GET /api/properties/sample-apartment-1 200 in 467ms
+ GET /properties 200 in 35ms

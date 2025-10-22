@@ -4,9 +4,10 @@ import { calculateDuration } from '@/lib/utils/helpers';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const searchParams = req.nextUrl.searchParams;
     const checkIn = searchParams.get('checkIn');
     const checkOut = searchParams.get('checkOut');
@@ -36,7 +37,7 @@ export async function GET(
     }
 
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         property: {
           select: {
@@ -69,7 +70,7 @@ export async function GET(
 
     const existingBookings = await prisma.booking.findMany({
       where: {
-        roomId: params.id,
+        roomId: id,
         status: {
           in: ['WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'CONFIRMED'],
         },

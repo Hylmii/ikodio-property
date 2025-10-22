@@ -51,16 +51,22 @@ export default function TenantDashboardPage() {
     setIsLoading(true);
     try {
       const [propertiesRes, ordersRes] = await Promise.all([
-        fetch('/api/properties'),
+        fetch(`/api/properties?tenantId=${session?.user?.id}`),
         fetch('/api/tenant/orders'),
       ]);
 
       const propertiesData = await propertiesRes.json();
       const ordersData = await ordersRes.json();
 
+      console.log('Properties response:', propertiesData);
+      console.log('Orders response:', ordersData);
+
       if (propertiesRes.ok && ordersRes.ok) {
-        const properties = propertiesData.data;
-        const orders = ordersData.data;
+        const properties = propertiesData.data || [];
+        const orders = ordersData.data || [];
+
+        console.log('Properties count:', properties.length);
+        console.log('Orders count:', orders.length);
 
         const totalRevenue = orders
           .filter((o: any) => o.status === 'CONFIRMED' || o.status === 'COMPLETED')
@@ -83,6 +89,8 @@ export default function TenantDashboardPage() {
           averageRating,
           recentOrders: orders.slice(0, 5),
         });
+      } else {
+        console.error('Error responses:', { propertiesData, ordersData });
       }
     } catch (error) {
       console.error('Error fetching stats:', error);

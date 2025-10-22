@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Calculate total revenue
-    const totalRevenue = bookings.reduce((sum, booking) => sum + booking.finalPrice, 0);
+    const totalRevenue = bookings.reduce((sum, booking) => sum + Number(booking.totalPrice), 0);
     const totalBookings = bookings.length;
 
     // Group by logic
@@ -96,13 +96,13 @@ export async function GET(req: NextRequest) {
         }
 
         acc[propertyId].totalBookings += 1;
-        acc[propertyId].totalRevenue += booking.finalPrice;
+        acc[propertyId].totalRevenue += Number(booking.totalPrice);
         acc[propertyId].bookings.push({
           bookingNumber: booking.bookingNumber,
-          checkIn: booking.checkIn,
-          checkOut: booking.checkOut,
-          guests: booking.guests,
-          finalPrice: booking.finalPrice,
+          checkIn: booking.checkInDate,
+          checkOut: booking.checkOutDate,
+          guests: booking.numberOfGuests,
+          finalPrice: Number(booking.totalPrice),
           status: booking.status,
         });
 
@@ -119,10 +119,10 @@ export async function GET(req: NextRequest) {
         roomName: booking.room.name,
         userName: booking.user.name,
         userEmail: booking.user.email,
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-        guests: booking.guests,
-        finalPrice: booking.finalPrice,
+        checkIn: booking.checkInDate,
+        checkOut: booking.checkOutDate,
+        guests: booking.numberOfGuests,
+        finalPrice: Number(booking.totalPrice),
         status: booking.status,
         createdAt: booking.createdAt,
       }));
@@ -145,13 +145,13 @@ export async function GET(req: NextRequest) {
         }
 
         acc[userId].totalBookings += 1;
-        acc[userId].totalRevenue += booking.finalPrice;
+        acc[userId].totalRevenue += Number(booking.totalPrice);
         acc[userId].bookings.push({
           bookingNumber: booking.bookingNumber,
           propertyName: booking.room.property.name,
-          checkIn: booking.checkIn,
-          checkOut: booking.checkOut,
-          finalPrice: booking.finalPrice,
+          checkIn: booking.checkInDate,
+          checkOut: booking.checkOutDate,
+          finalPrice: Number(booking.totalPrice),
           status: booking.status,
         });
 

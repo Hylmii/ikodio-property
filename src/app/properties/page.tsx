@@ -81,12 +81,12 @@ export default function PropertiesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-12">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-slate-900 text-white py-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Temukan Properti Impian</h1>
-          <p className="text-blue-100 text-lg">
-            Jelajahi berbagai pilihan properti terbaik yang tersedia untuk Anda
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Explore Properties</h1>
+          <p className="text-slate-300 text-lg">
+            Discover the best accommodations tailored to your needs
           </p>
         </div>
       </div>
@@ -95,10 +95,10 @@ export default function PropertiesPage() {
         <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 -mt-16">
           <div className="md:col-span-2">
             <div className="relative">
-              <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-4 top-4 h-5 w-5 text-slate-500" />
               <Input
-                placeholder="Cari nama properti..."
-                className="pl-12 h-14 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 shadow-lg text-base"
+                placeholder="Search properties..."
+                className="pl-12 h-14 bg-white border-0 shadow-xl text-base focus-visible:ring-2 focus-visible:ring-slate-900"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -116,12 +116,12 @@ export default function PropertiesPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-14 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 shadow-lg text-base">
-                <Filter className="h-4 w-4 mr-2 text-slate-400" />
-                <SelectValue placeholder="Pilih Kota" />
+              <SelectTrigger className="h-14 bg-white border-0 shadow-xl text-base focus:ring-2 focus:ring-slate-900">
+                <Filter className="h-4 w-4 mr-2 text-slate-500" />
+                <SelectValue placeholder="City" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Kota</SelectItem>
+                <SelectItem value="all">All Cities</SelectItem>
                 <SelectItem value="Jakarta">Jakarta</SelectItem>
                 <SelectItem value="Bandung">Bandung</SelectItem>
                 <SelectItem value="Surabaya">Surabaya</SelectItem>
@@ -139,14 +139,14 @@ export default function PropertiesPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-14 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 shadow-lg text-base">
-                <SelectValue placeholder="Urutkan" />
+              <SelectTrigger className="h-14 bg-white border-0 shadow-xl text-base focus:ring-2 focus:ring-slate-900">
+                <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="createdAt">Terbaru</SelectItem>
-                <SelectItem value="name">Nama A-Z</SelectItem>
-                <SelectItem value="price-asc">Harga Terendah</SelectItem>
-                <SelectItem value="price-desc">Harga Tertinggi</SelectItem>
+                <SelectItem value="createdAt">Latest</SelectItem>
+                <SelectItem value="name">Name A-Z</SelectItem>
+                <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                <SelectItem value="price-desc">Price: High to Low</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -155,67 +155,76 @@ export default function PropertiesPage() {
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400">Memuat properti...</p>
+              <Loader2 className="h-12 w-12 animate-spin text-slate-900 mx-auto mb-4" />
+              <p className="text-slate-600">Loading properties...</p>
             </div>
           </div>
         ) : properties.length === 0 ? (
-          <Card className="py-16 border-2 border-dashed">
+          <Card className="py-16 border-2 border-dashed bg-white">
             <CardContent className="text-center">
-              <MapPin className="h-16 w-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Tidak Ada Properti</h3>
-              <p className="text-slate-600 dark:text-slate-400">Tidak ada properti yang sesuai dengan pencarian Anda</p>
+              <MapPin className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2 text-slate-900">No Properties Found</h3>
+              <p className="text-slate-600">No properties match your search criteria</p>
             </CardContent>
           </Card>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {properties.map((property) => (
                 <Link key={property.id} href={`/properties/${property.id}`} className="group">
-                  <Card className="h-full overflow-hidden border-2 border-transparent hover:border-blue-500 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                    <div className="relative h-56 w-full overflow-hidden">
+                  <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white">
+                    <div className="relative h-72 w-full overflow-hidden bg-slate-200">
                       {property.images.length > 0 ? (
                         <Image
                           src={property.images[0]}
                           alt={property.name}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                          <MapPin className="h-16 w-16 text-slate-400 dark:text-slate-600" />
+                        <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                          <MapPin className="h-16 w-16 text-slate-400" />
                         </div>
                       )}
-                      <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold">
-                        {property.category.name}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+                      <div className="absolute top-4 left-4">
+                        <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-900/90 text-white backdrop-blur-sm">
+                          {property.category.name}
+                        </span>
                       </div>
-                    </div>
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-xl font-bold line-clamp-1 group-hover:text-blue-600 transition-colors">
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <h3 className="font-bold text-xl mb-1 text-white line-clamp-1">
                           {property.name}
                         </h3>
+                        <div className="flex items-center gap-1 text-white/90">
+                          <MapPin className="h-4 w-4" />
+                          <span className="text-sm font-medium">{property.city}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4 mb-4">
                         {property.totalReviews > 0 && (
-                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-bold">
+                          <div className="flex items-center gap-1 bg-slate-100 px-3 py-1 rounded-full">
+                            <Star className="h-4 w-4 fill-slate-900 text-slate-900" />
+                            <span className="font-bold text-sm">
                               {property.averageRating.toFixed(1)}
                             </span>
+                            <span className="text-xs text-slate-600">({property.totalReviews})</span>
                           </div>
                         )}
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 line-clamp-2 mb-4 text-sm">
+                      <p className="text-slate-600 line-clamp-2 mb-4 text-sm">
                         {property.description}
                       </p>
-                      <div className="flex items-center text-slate-600 dark:text-slate-400 mb-4">
-                        <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                        <span className="text-sm">{property.city}</span>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {formatPrice(getMinPrice(property.rooms))}
-                        </span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">/malam</span>
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <div>
+                          <span className="text-xs text-slate-500">Starting from</span>
+                          <p className="text-slate-900 font-bold text-2xl">
+                            {formatPrice(getMinPrice(property.rooms))}
+                            <span className="text-sm font-normal text-slate-500">/night</span>
+                          </p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -224,19 +233,19 @@ export default function PropertiesPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-3">
+              <div className="flex justify-center items-center gap-4">
                 <Button
                   variant="outline"
                   size="lg"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="font-semibold"
+                  className="font-semibold border-2 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50"
                 >
                   Previous
                 </Button>
-                <div className="px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border-2">
-                  <span className="font-semibold">
-                    Halaman {page} dari {totalPages}
+                <div className="px-6 py-3 bg-white rounded-xl shadow-lg border-2 border-slate-900">
+                  <span className="font-bold text-slate-900">
+                    Page {page} of {totalPages}
                   </span>
                 </div>
                 <Button
@@ -244,7 +253,7 @@ export default function PropertiesPage() {
                   size="lg"
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
-                  className="font-semibold"
+                  className="font-semibold border-2 hover:bg-slate-900 hover:text-white transition-all disabled:opacity-50"
                 >
                   Next
                 </Button>

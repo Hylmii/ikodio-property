@@ -41,14 +41,20 @@ export async function GET(request: Request) {
         await sendEmail({
           to: booking.user.email,
           subject: 'Pesanan Dibatalkan - Batas Waktu Pembayaran Terlewati',
-          template: 'booking-cancelled',
-          data: {
-            userName: booking.user.name,
-            propertyName: booking.room.property.name,
-            roomName: booking.room.name,
-            bookingId: booking.id,
-            reason: 'Batas waktu pembayaran telah terlewati',
-          },
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Pesanan Dibatalkan</h2>
+              <p>Halo ${booking.user.name},</p>
+              <p>Pesanan Anda telah dibatalkan karena batas waktu pembayaran telah terlewati.</p>
+              <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Properti:</strong> ${booking.room.property.name}</p>
+                <p><strong>Kamar:</strong> ${booking.room.name}</p>
+                <p><strong>Nomor Booking:</strong> ${booking.bookingNumber}</p>
+              </div>
+              <p>Silakan buat pesanan baru jika Anda masih tertarik.</p>
+              <p>Terima kasih,<br>Tim ${process.env.APP_NAME || 'Ikodio Property'}</p>
+            </div>
+          `,
         });
 
         results.push({

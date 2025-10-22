@@ -5,11 +5,12 @@ import { roomSchema } from '@/lib/validations/schemas';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         property: {
           include: {
@@ -63,9 +64,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -76,7 +78,7 @@ export async function PUT(
     }
 
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         property: true,
       },
@@ -101,7 +103,7 @@ export async function PUT(
     const validation = roomSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
@@ -110,7 +112,7 @@ export async function PUT(
     const images = body.images || room.images;
 
     const updatedRoom = await prisma.room.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -144,9 +146,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -157,7 +160,7 @@ export async function DELETE(
     }
 
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         property: true,
       },
@@ -179,7 +182,7 @@ export async function DELETE(
 
     const activeBookings = await prisma.booking.count({
       where: {
-        roomId: params.id,
+        roomId: id,
         status: {
           in: ['WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'CONFIRMED'],
         },
@@ -194,7 +197,7 @@ export async function DELETE(
     }
 
     await prisma.room.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({

@@ -1,0 +1,250 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { RoomTabs } from '@/components/PeakSeasonRates/RoomTabs';
+import { RateCard } from '@/components/PeakSeasonRates/RateCard';
+import { RateDialog } from '@/components/PeakSeasonRates/RateDialog';
+import { DeleteDialog } from '@/components/PeakSeasonRates/DeleteDialog';
+
+interface Room {
+  id: string;
+  name: string;
+}
+
+interface PeakSeasonRate {
+  id: string;
+  startDate: string;
+  endDate: string;
+  rate: number;
+  roomId: string;
+  room: { name: string };
+}
+
+export default function PeakSeasonRatesPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const propertyId = searchParams.get('propertyId');
+
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState('');
+  const [rates, setRates] = useState<PeakSeasonRate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selectedRate, setSelectedRate] = useState<PeakSeasonRate | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [rate, setRate] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState('');
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login-tenant');
+    } else if (status === 'authenticated') {
+      if (session.user.role !== 'TENANT') {
+        router.push('/');
+      } else if (propertyId) {
+        fetchRooms();
+      }
+    }
+  }, [status, propertyId]);
+
+  useEffect(() => {
+    if (selectedRoomId) {
+      fetchRates();
+    }
+  }, [selectedRoomId]);
+
+  const fetchRooms = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/properties/${propertyId}/rooms`);
+      const data = await response.json();
+      if (response.ok && data.data.length > 0) {
+        setRooms(data.data);
+        setSelectedRoomId(data.data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchRates = async () => {
+    try {
+      const response = await fetch(`/api/rooms/${selectedRoomId}/peak-season-rates`);
+      const data = await response.json();
+      if (response.ok) setRates(data.data);
+    } catch (error) {
+      console.error('Error fetching rates:', error);
+    }
+  };
+
+  const handleAddRate = () => {
+    setIsEdit(false);
+    setSelectedRate(null);
+    setStartDate('');
+    setEndDate('');
+    setRate('');
+    setIsDialogOpen(true);
+  };
+
+  const handleEditRate = (rate: PeakSeasonRate) => {
+    setIsEdit(true);
+    setSelectedRate(rate);
+    setSelectedRoomId(rate.roomId);
+    setStartDate(rate.startDate.split('T')[0]);
+    setEndDate(rate.endDate.split('T')[0]);
+    setRate(rate.rate.toString());
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRoomId || !startDate || !endDate || !rate) {
+      toast({ title: 'Error', description: 'Semua field harus diisi', variant: 'destructive' });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const url = isEdit
+        ? `/api/peak-season-rates/${selectedRate?.id}`
+        : `/api/peak-season-rates`;
+
+      const response = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: selectedRoomId,
+          startDate: new Date(startDate).toISOString(),
+          endDate: new Date(endDate).toISOString(),
+          rate: parseFloat(rate),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menyimpan tarif');
+      }
+
+      toast({
+        title: 'Berhasil',
+        description: `Tarif berhasil ${isEdit ? 'diupdate' : 'ditambahkan'}`,
+      });
+      setIsDialogOpen(false);
+      fetchRates();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsProcessing(true);
+
+    try {
+      const response = await fetch(`/api/peak-season-rates/${deleteId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menghapus tarif');
+      }
+
+      toast({ title: 'Berhasil', description: 'Tarif berhasil dihapus' });
+      setIsDeleteDialogOpen(false);
+      setDeleteId('');
+      fetchRates();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Tarif Peak Season</h1>
+
+        {rooms.length > 0 && (
+          <RoomTabs
+            rooms={rooms}
+            selectedRoomId={selectedRoomId}
+            onRoomChange={setSelectedRoomId}
+            onAddRate={handleAddRate}
+          />
+        )}
+
+        {rates.length === 0 ? (
+          <div className="text-center py-12 text-slate-500">
+            Belum ada tarif peak season untuk kamar ini
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {rates.map((rate) => (
+              <RateCard
+                key={rate.id}
+                rate={rate}
+                onEdit={handleEditRate}
+                onDelete={(id) => {
+                  setDeleteId(id);
+                  setIsDeleteDialogOpen(true);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <RateDialog
+          open={isDialogOpen}
+          isEdit={isEdit}
+          selectedRoomId={selectedRoomId}
+          startDate={startDate}
+          endDate={endDate}
+          rate={rate}
+          rooms={rooms}
+          isProcessing={isProcessing}
+          onClose={() => setIsDialogOpen(false)}
+          onRoomChange={setSelectedRoomId}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onRateChange={setRate}
+          onSubmit={handleSubmit}
+        />
+
+        <DeleteDialog
+          open={isDeleteDialogOpen}
+          isProcessing={isProcessing}
+          onClose={() => {
+            setIsDeleteDialogOpen(false);
+            setDeleteId('');
+          }}
+          onConfirm={handleDelete}
+        />
+      </div>
+    </div>
+  );
+}

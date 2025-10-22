@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    console.log('Tenant ID:', session.user.id);
+
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -23,6 +25,8 @@ export async function GET(req: NextRequest) {
     const where: any = {
       tenantId: session.user.id,
     };
+    
+    console.log('Where clause:', JSON.stringify(where, null, 2));
 
     if (status) {
       where.status = status;
@@ -72,6 +76,9 @@ export async function GET(req: NextRequest) {
       }),
       prisma.booking.count({ where }),
     ]);
+
+    console.log('Found orders:', orders.length);
+    console.log('Total orders:', total);
 
     return NextResponse.json({
       success: true,

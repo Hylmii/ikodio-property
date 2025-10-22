@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { auth } from '@/lib/auth/auth.config';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,8 +30,22 @@ export async function GET(request: Request) {
       where: { id: roomId },
       include: {
         property: {
-          include: {
-            peakSeasonRates: true,
+          select: {
+            tenantId: true,
+          },
+        },
+        peakSeasonRates: {
+          where: {
+            OR: [
+              {
+                startDate: {
+                  lte: new Date(year, month, 0),
+                },
+                endDate: {
+                  gte: new Date(year, month - 1, 1),
+                },
+              },
+            ],
           },
         },
       },
@@ -82,10 +95,10 @@ export async function GET(request: Request) {
         return currentDate >= checkIn && currentDate < checkOut;
       });
 
-      let price = room.basePrice;
+      let price = Number(room.basePrice);
       let isPeakSeason = false;
 
-      const peakSeasonRate = room.property.peakSeasonRates.find(rate => {
+      const peakSeasonRate = room.peakSeasonRates.find(rate => {
         const startPeak = new Date(rate.startDate);
         const endPeak = new Date(rate.endDate);
         return currentDate >= startPeak && currentDate <= endPeak;
@@ -93,11 +106,7 @@ export async function GET(request: Request) {
 
       if (peakSeasonRate) {
         isPeakSeason = true;
-        if (peakSeasonRate.priceType === 'PERCENTAGE') {
-          price = room.basePrice * (1 + peakSeasonRate.adjustment / 100);
-        } else {
-          price = room.basePrice + peakSeasonRate.adjustment;
-        }
+        price = Number(peakSeasonRate.priceValue);
       }
 
       calendarData.push({

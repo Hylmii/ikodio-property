@@ -1,0 +1,137 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { VerificationSuccess } from '@/components/VerifyEmail/VerificationSuccess';
+import { VerificationError } from '@/components/VerifyEmail/VerificationError';
+import { PasswordForm } from '@/components/VerifyEmail/PasswordForm';
+
+export default function VerifyEmailPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'expired'>('loading');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState('');
+
+  const token = searchParams.get('token');
+
+  useEffect(() => {
+    if (!token) {
+      setStatus('error');
+      return;
+    }
+
+    verifyToken();
+  }, [token]);
+
+  const verifyToken = async () => {
+    try {
+      const response = await fetch(`/api/auth/verify-email?token=${token}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmail(data.data.email);
+        if (data.data.isVerified) {
+          setStatus('success');
+        }
+      } else {
+        if (response.status === 400 && data.error?.includes('sudah diverifikasi')) {
+          setStatus('success');
+        } else if (response.status === 410 || data.error?.includes('kadaluarsa')) {
+          setStatus('expired');
+        } else {
+          setStatus('error');
+        }
+      }
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      setStatus('error');
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!password || !confirmPassword) {
+      toast({ title: 'Error', description: 'Semua field harus diisi', variant: 'destructive' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({ title: 'Error', description: 'Password tidak cocok', variant: 'destructive' });
+      return;
+    }
+
+    if (password.length < 8) {
+      toast({ title: 'Error', description: 'Password minimal 8 karakter', variant: 'destructive' });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Verifikasi gagal');
+      }
+
+      toast({ title: 'Berhasil', description: 'Email berhasil diverifikasi!' });
+      setStatus('success');
+
+      setTimeout(() => {
+        router.push('/login-user');
+      }, 2000);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      setStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4">
+      <div className="w-full max-w-md">
+        {status === 'loading' && email && (
+          <PasswordForm
+            email={email}
+            password={password}
+            confirmPassword={confirmPassword}
+            isSubmitting={isSubmitting}
+            onPasswordChange={setPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            onSubmit={handleSubmit}
+          />
+        )}
+
+        {status === 'loading' && !email && (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {status === 'success' && <VerificationSuccess />}
+
+        {(status === 'error' || status === 'expired') && (
+          <VerificationError
+            message={
+              status === 'expired'
+                ? 'Link verifikasi telah kadaluarsa. Silakan minta link baru.'
+                : 'Link verifikasi tidak valid. Silakan coba lagi.'
+            }
+          />
+        )}
+      </div>
+    </div>
+  );
+}

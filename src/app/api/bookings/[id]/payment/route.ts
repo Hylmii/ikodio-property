@@ -8,9 +8,10 @@ import { isValidImageType, isValidFileSize } from '@/lib/utils/helpers';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'USER') {
@@ -21,7 +22,7 @@ export async function PUT(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!booking) {
@@ -47,7 +48,7 @@ export async function PUT(
 
     if (booking.paymentDeadline < new Date()) {
       await prisma.booking.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: 'CANCELLED',
           cancelledAt: new Date(),
@@ -104,7 +105,7 @@ export async function PUT(
     const paymentProofUrl = `/uploads/payment/${filename}`;
 
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         paymentProof: paymentProofUrl,
         paymentUploadedAt: new Date(),

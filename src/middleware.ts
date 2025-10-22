@@ -6,47 +6,98 @@ export async function middleware(request: NextRequest) {
   const session = await auth();
   const { pathname } = request.nextUrl;
 
-  // Public routes
-  const publicRoutes = ['/', '/login-user', '/login-tenant', '/register-user', '/register-tenant', '/verify-email', '/reset-password', '/properties'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    '/', 
+    '/login-user', 
+    '/login-tenant', 
+    '/register-user', 
+    '/register-tenant', 
+    '/verify-email', 
+    '/reset-password',
+    '/confirm-reset-password',
+    '/properties',
+    '/privacy-policy',
+    '/terms-of-service',
+    '/cookie-policy'
+  ];
+  
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(`${route}/`) || pathname.startsWith('/properties/')
+  );
 
-  // User protected routes
-  const userRoutes = ['/profile', '/transactions', '/reviews'];
+  // User protected routes - only accessible by authenticated USER
+  const userRoutes = ['/profile', '/transactions'];
   const isUserRoute = userRoutes.some(route => pathname.startsWith(route));
 
-  // Tenant protected routes
-  const tenantRoutes = ['/dashboard', '/tenant/properties', '/tenant/orders', '/tenant/reports', '/tenant/categories'];
+  // Tenant protected routes - only accessible by authenticated TENANT
+  const tenantRoutes = ['/tenant'];
   const isTenantRoute = tenantRoutes.some(route => pathname.startsWith(route));
 
-  // API routes
+  // API and static routes - always allow
   const isApiRoute = pathname.startsWith('/api');
+  const isStaticRoute = pathname.startsWith('/_next') || pathname.startsWith('/uploads') || pathname.includes('.');
 
-  // Jika user belum login dan mencoba akses protected route
-  if (!session && (isUserRoute || isTenantRoute)) {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (isApiRoute || isStaticRoute) {
+    return NextResponse.next();
   }
 
-  // Jika user sudah login
+  // If user not logged in and trying to access protected route
+  if (!session && (isUserRoute || isTenantRoute)) {
+    const loginUrl = isTenantRoute ? '/login-tenant' : '/login-user';
+    const url = new URL(loginUrl, request.url);
+    url.searchParams.set('callbackUrl', pathname);
+    url.searchParams.set('message', 'Please login to continue');
+    return NextResponse.redirect(url);
+  }
+
+  // If user is logged in
   if (session && session.user) {
     const userRole = session.user.role;
+    const isVerified = session.user.isVerified;
 
-    // User role trying to access tenant routes
+    // Redirect logged-in users away from login/register pages
+    if (pathname === '/login-user' || pathname === '/register-user') {
+      if (userRole === 'USER') {
+        return NextResponse.redirect(new URL('/properties', request.url));
+      }
+    }
+
+    if (pathname === '/login-tenant' || pathname === '/register-tenant') {
+      if (userRole === 'TENANT') {
+        return NextResponse.redirect(new URL('/tenant/dashboard', request.url));
+      }
+    }
+
+    // USER role trying to access TENANT routes
     if (userRole === 'USER' && isTenantRoute) {
-      return NextResponse.redirect(new URL('/', request.url));
+      const url = new URL('/', request.url);
+      url.searchParams.set('error', 'Access denied. This area is for property owners only.');
+      return NextResponse.redirect(url);
     }
 
-    // Tenant role trying to access user routes
+    // TENANT role trying to access USER routes
     if (userRole === 'TENANT' && isUserRoute) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      const url = new URL('/tenant/dashboard', request.url);
+      url.searchParams.set('error', 'Access denied. Please use tenant dashboard.');
+      return NextResponse.redirect(url);
     }
 
-    // Redirect to appropriate dashboard after login
-    if (pathname === '/login-user' && userRole === 'USER') {
-      return NextResponse.redirect(new URL('/profile', request.url));
-    }
-
-    if (pathname === '/login-tenant' && userRole === 'TENANT') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    // Check email verification for critical actions
+    const requiresVerification = [
+      '/transactions/create',
+      '/tenant/properties/create',
+      '/tenant/properties/new',
+      '/tenant/orders',
+    ];
+    
+    const needsVerification = requiresVerification.some(path => pathname.startsWith(path));
+    
+    if (needsVerification && !isVerified) {
+      const url = new URL('/profile', request.url);
+      url.searchParams.set('error', 'Please verify your email address to continue');
+      url.searchParams.set('showVerification', 'true');
+      return NextResponse.redirect(url);
     }
   }
 
@@ -55,6 +106,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|uploads).*)',
+    /*
+     * Match all request paths except:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - uploads (upload directory)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|uploads).*)',
   ],
 };

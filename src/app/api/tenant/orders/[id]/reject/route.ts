@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
@@ -27,7 +28,7 @@ export async function PUT(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         room: {
           include: {
@@ -65,11 +66,11 @@ export async function PUT(
     newPaymentDeadline.setHours(newPaymentDeadline.getHours() + 1);
 
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: 'WAITING_PAYMENT',
         paymentProof: null,
-        paymentProofUploadedAt: null,
+        paymentUploadedAt: null,
         paymentDeadline: newPaymentDeadline,
       },
       include: {

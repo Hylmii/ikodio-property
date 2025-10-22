@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth.config';
 import { prisma } from '@/lib/prisma';
 import { bookingSchema } from '@/lib/validations/schemas';
 import { generateBookingNumber, calculateDuration } from '@/lib/utils/helpers';
+import { createMidtransTransaction } from '@/lib/midtrans';
 
 export async function GET(req: NextRequest) {
   try {
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
     const validation = bookingSchema.safeParse(validationData);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }

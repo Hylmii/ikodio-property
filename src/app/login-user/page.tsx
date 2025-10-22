@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Mail, Lock, Loader2 } from 'lucide-react';
+import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 
 export default function LoginUserPage() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export default function LoginUserPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log('🔐 Login attempt with:', formData.email);
+
     try {
       const result = await signIn('user-credentials', {
         email: formData.email,
@@ -31,21 +34,47 @@ export default function LoginUserPage() {
         redirect: false,
       });
 
+      console.log('📊 SignIn result:', result);
+
       if (result?.error) {
+        console.error('❌ Login error:', result.error);
+        
+        // Check if error is about unverified email
+        const isUnverifiedError = result.error.includes('belum diverifikasi');
+        
         toast({
           title: 'Login Gagal',
-          description: result.error,
+          description: result.error === 'CredentialsSignin' 
+            ? 'Email atau password salah' 
+            : result.error,
           variant: 'destructive',
+          action: isUnverifiedError ? (
+            <button
+              onClick={() => router.push('/resend-verification')}
+              className="text-xs underline"
+            >
+              Kirim Ulang
+            </button>
+          ) : undefined,
         });
-      } else {
+      } else if (result?.ok) {
+        console.log('✅ Login successful');
         toast({
           title: 'Login Berhasil',
           description: 'Selamat datang kembali!',
         });
         router.push('/profile');
         router.refresh();
+      } else {
+        console.warn('⚠️ Unexpected result:', result);
+        toast({
+          title: 'Error',
+          description: 'Terjadi kesalahan yang tidak terduga',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
+      console.error('💥 Exception during login:', error);
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan saat login',
@@ -115,11 +144,30 @@ export default function LoginUserPage() {
             </Button>
           </form>
 
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-slate-800 px-2 text-muted-foreground">
+                Atau lanjutkan dengan
+              </span>
+            </div>
+          </div>
+
+          <SocialLoginButtons callbackUrl="/profile" />
+
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Belum punya akun?{' '}
               <Link href="/register-user" className="text-primary hover:underline font-medium">
                 Daftar sekarang
+              </Link>
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              Email belum terverifikasi?{' '}
+              <Link href="/resend-verification" className="text-primary hover:underline font-medium">
+                Kirim ulang link verifikasi
               </Link>
             </p>
             <p className="mt-2 text-muted-foreground">
