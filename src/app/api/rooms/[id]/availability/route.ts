@@ -4,10 +4,10 @@ import { calculateDuration } from '@/lib/utils/helpers';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const searchParams = req.nextUrl.searchParams;
     const checkIn = searchParams.get('checkIn');
     const checkOut = searchParams.get('checkOut');
