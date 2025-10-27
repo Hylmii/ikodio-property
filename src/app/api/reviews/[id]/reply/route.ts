@@ -1,40 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth.config';
 import { prisma } from '@/lib/prisma';
-import { reviewReplySchema } from '@/lib/validations/schemas';
-import { z } from 'zod';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: reviewId } = await params;
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized - Hanya tenant yang dapat membalas review' },
+        { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
     const body = await req.json();
-    const validatedData = reviewReplySchema.parse(body);
+    const { comment } = body;
 
-    // Check if review exists
-    const review = await prisma.review.findUnique({
-      where: { id },
-      include: {
-        property: {
-          select: {
-            id: true,
-            tenantId: true,
-          },
-        },
-        reply: true,
-      },
-    });
+    if (!comment || comment.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Komentar balasan wajib diisi' },
+        { status: 400 }
+      );
+    }
+
+    if (comment.trim().length > 1000) {
+      return NextResponse.json(
+        { success: false, error: 'Komentar maksimal 1000 karakter' },
+        { status: 400 }
+      );
+    }
+
+    const review = await getReviewWithProperty(reviewId);
 
     if (!review) {
       return NextResponse.json(
@@ -43,48 +43,76 @@ export async function POST(
       );
     }
 
-    // Check if property belongs to tenant
-    if (review.property.tenantId !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Property tidak dimiliki oleh Anda' },
-        { status: 403 }
-      );
-    }
+    validateTenantOwnership(review, session.user.id);
 
-    // Check if reply already exists
     if (review.reply) {
       return NextResponse.json(
-        { success: false, error: 'Review ini sudah memiliki balasan' },
+        { success: false, error: 'Review sudah memiliki balasan' },
         { status: 400 }
       );
     }
 
-    // Create reply
-    const reply = await prisma.reviewReply.create({
-      data: {
-        comment: validatedData.comment,
-        reviewId: id,
-        tenantId: session.user.id,
-      },
-    });
+    const reply = await createReply(reviewId, session.user.id, comment);
 
     return NextResponse.json({
       success: true,
-      message: 'Balasan review berhasil dibuat',
+      message: 'Balasan berhasil ditambahkan',
       data: reply,
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ValidationError) {
       return NextResponse.json(
-        { success: false, error: 'Data tidak valid', details: error.issues },
-        { status: 400 }
+        { success: false, error: error.message },
+        { status: error.statusCode }
       );
     }
 
-    console.error('Create review reply error:', error);
     return NextResponse.json(
-      { success: false, error: 'Terjadi kesalahan saat membuat balasan review' },
+      { success: false, error: 'Terjadi kesalahan saat menambahkan balasan' },
       { status: 500 }
     );
+  }
+}
+
+async function getReviewWithProperty(reviewId: string) {
+  return await prisma.review.findUnique({
+    where: { id: reviewId },
+    include: {
+      property: {
+        select: {
+          tenantId: true,
+        },
+      },
+      reply: true,
+    },
+  });
+}
+
+function validateTenantOwnership(review: any, tenantId: string) {
+  if (review.property.tenantId !== tenantId) {
+    throw new ValidationError(
+      'Anda tidak memiliki akses untuk review ini',
+      403
+    );
+  }
+}
+
+async function createReply(reviewId: string, tenantId: string, comment: string) {
+  return await prisma.reviewReply.create({
+    data: {
+      reviewId,
+      tenantId,
+      comment: comment.trim(),
+    },
+  });
+}
+
+class ValidationError extends Error {
+  statusCode: number;
+  
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = 'ValidationError';
   }
 }

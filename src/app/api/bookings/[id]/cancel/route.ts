@@ -35,9 +35,14 @@ export async function PUT(
       );
     }
 
-    if (booking.status !== 'WAITING_PAYMENT') {
+    // Allow cancellation for WAITING_PAYMENT and WAITING_CONFIRMATION
+    const cancellableStatuses = ['WAITING_PAYMENT', 'WAITING_CONFIRMATION'];
+    if (!cancellableStatuses.includes(booking.status)) {
       return NextResponse.json(
-        { success: false, error: 'Booking hanya dapat dibatalkan sebelum upload bukti pembayaran' },
+        { 
+          success: false, 
+          error: 'Booking tidak dapat dibatalkan. Silakan hubungi tenant untuk pembatalan.' 
+        },
         { status: 400 }
       );
     }
@@ -57,7 +62,6 @@ export async function PUT(
       data: updatedBooking,
     });
   } catch (error) {
-    console.error('Cancel booking error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan saat membatalkan booking' },
       { status: 500 }
