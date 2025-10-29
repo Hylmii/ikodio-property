@@ -1,123 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth.config';
-import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+// src/app/api/payment/create-transaction/route.ts
+import { NextResponse } from 'next/server';
 
-// Midtrans configuration
+const IS_PROD = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || '';
-const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
-const MIDTRANS_API_URL = MIDTRANS_IS_PRODUCTION
-  ? 'https://app.midtrans.com/snap/v1/transactions'
-  : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
 
-export async function POST(req: NextRequest) {
+const SNAP_BASE = IS_PROD
+  ? 'https://app.midtrans.com'
+  : 'https://app.sandbox.midtrans.com';
+
+export async function POST(req: Request) {
   try {
-    const session = await auth();
-    
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const { bookingId, amount } = await req.json();
 
-    if (!bookingId || !amount) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (!bookingId) {
+      return NextResponse.json({ error: 'Missing bookingId' }, { status: 400 });
+    }
+    const grossAmount = Number(amount);
+    if (!Number.isFinite(grossAmount) || grossAmount <= 0) {
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+    }
+    if (!MIDTRANS_SERVER_KEY) {
+      return NextResponse.json({ error: 'Server key not configured' }, { status: 500 });
     }
 
-    // Get booking details
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: {
-        user: true,
-        room: {
-          include: {
-            property: true,
-          },
-        },
-      },
-    });
+    // Midtrans needs a UNIQUE order_id each attempt
+    const orderId = `BOOKING-${bookingId}-${Date.now()}`;
 
-    if (!booking) {
-      return NextResponse.json(
-        { success: false, error: 'Booking tidak ditemukan' },
-        { status: 404 }
-      );
-    }
-
-    if (booking.userId !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
-    // Create transaction ID
-    const orderId = `ORDER-${bookingId}-${Date.now()}`;
-
-    // Prepare Midtrans transaction data
-    const transactionData = {
+    const payload = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: amount,
+        gross_amount: Math.round(grossAmount), // IDR integer
       },
-      customer_details: {
-        first_name: booking.user.name,
-        email: booking.user.email,
-        phone: booking.user.phone || '',
-      },
-      item_details: [
-        {
-          id: booking.roomId,
-          price: amount,
-          quantity: 1,
-          name: `${booking.room.property.name} - ${booking.room.name}`,
-        },
-      ],
+      credit_card: { secure: true },
       callbacks: {
-        finish: `${process.env.NEXT_PUBLIC_APP_URL}/transactions?payment=success`,
+        finish: `${process.env.APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/transactions`,
       },
+      // Optional: pass customer_details here if you have them
     };
 
-    // Call Midtrans API
-    const response = await fetch(MIDTRANS_API_URL, {
+    const auth = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString('base64');
+
+    const res = await fetch(`${SNAP_BASE}/snap/v1/transactions`, {
       method: 'POST',
       headers: {
+        Authorization: `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(MIDTRANS_SERVER_KEY + ':').toString('base64')}`,
+        Accept: 'application/json',
       },
-      body: JSON.stringify(transactionData),
+      body: JSON.stringify(payload),
     });
 
-    const midtransResponse = await response.json();
+    const data = await res.json();
 
-    if (!response.ok) {
-      throw new Error(midtransResponse.error_messages?.[0] || 'Failed to create transaction');
+    // Log for debugging (tail your dev logs)
+    console.log('[Midtrans:create-transaction] status:', res.status, 'response:', data);
+
+    if (!res.ok) {
+      const message = data?.status_message || data?.error_messages?.[0] || 'Midtrans error';
+      return NextResponse.json({ error: message, details: data }, { status: res.status });
     }
 
-    // Store transaction in database
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        paymentProof: orderId, // Store order ID for reference
-      },
-    });
+    // Expected: { token, redirect_url }
+    if (!data?.token) {
+      return NextResponse.json({ error: 'Midtrans did not return token', details: data }, { status: 502 });
+    }
 
-    return NextResponse.json({
-      success: true,
-      token: midtransResponse.token,
-      redirectUrl: midtransResponse.redirect_url,
-    });
-  } catch (error: any) {
-    console.error('Create payment transaction error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Terjadi kesalahan saat membuat transaksi' },
-      { status: 500 }
-    );
+    return NextResponse.json({ token: data.token, redirect_url: data.redirect_url });
+  } catch (e: any) {
+    console.error('[Midtrans:create-transaction] exception', e);
+    return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });
   }
 }

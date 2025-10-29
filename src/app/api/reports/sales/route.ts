@@ -15,32 +15,53 @@ export async function GET(req: NextRequest) {
     }
 
     const searchParams = req.nextUrl.searchParams;
-    const groupBy = searchParams.get('groupBy') || 'property'; // property | transaction | user
+    const groupBy = searchParams.get('groupBy') || 'property';
     const propertyId = searchParams.get('propertyId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
+    // Validate dates if provided
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid date format. Use YYYY-MM-DD' },
+          { status: 400 }
+        );
+      }
+      
+      if (start > end) {
+        return NextResponse.json(
+          { success: false, error: 'startDate must be before endDate' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Build WHERE clause correctly
     const where: any = {
-      tenantId: session.user.id,
+      room: {
+        property: {
+          tenantId: session.user.id, // Filter by tenant through relationship
+          ...(propertyId && { id: propertyId }) // Optional property filter
+        }
+      },
       status: {
         in: ['CONFIRMED', 'COMPLETED'],
       },
     };
 
-    if (propertyId) {
-      where.room = {
-        propertyId,
-      };
-    }
-
+    // Add date filters with correct field names
     if (startDate) {
-      where.checkIn = {
+      where.checkInDate = {
         gte: startOfDay(new Date(startDate)),
       };
     }
 
     if (endDate) {
-      where.checkOut = {
+      where.checkOutDate = {
         lte: endOfDay(new Date(endDate)),
       };
     }
@@ -72,93 +93,30 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Calculate total revenue
-    const totalRevenue = bookings.reduce((sum, booking) => sum + Number(booking.totalPrice), 0);
+    // Calculate summary
+    const totalRevenue = bookings.reduce(
+      (sum, booking) => sum + Number(booking.totalPrice), 
+      0
+    );
     const totalBookings = bookings.length;
+    const averageBookingValue = totalBookings > 0 
+      ? totalRevenue / totalBookings 
+      : 0;
 
-    // Group by logic
+    // Group data based on groupBy parameter
     let reportData: any = {};
 
     if (groupBy === 'property') {
-      // Group by property
-      const grouped = bookings.reduce((acc: any, booking) => {
-        const propertyId = booking.room.property.id;
-        const propertyName = booking.room.property.name;
-
-        if (!acc[propertyId]) {
-          acc[propertyId] = {
-            propertyId,
-            propertyName,
-            totalBookings: 0,
-            totalRevenue: 0,
-            bookings: [],
-          };
-        }
-
-        acc[propertyId].totalBookings += 1;
-        acc[propertyId].totalRevenue += Number(booking.totalPrice);
-        acc[propertyId].bookings.push({
-          bookingNumber: booking.bookingNumber,
-          checkIn: booking.checkInDate,
-          checkOut: booking.checkOutDate,
-          guests: booking.numberOfGuests,
-          finalPrice: Number(booking.totalPrice),
-          status: booking.status,
-        });
-
-        return acc;
-      }, {});
-
-      reportData = Object.values(grouped);
+      reportData = groupByProperty(bookings);
     } else if (groupBy === 'transaction') {
-      // Group by transaction/booking
-      reportData = bookings.map((booking) => ({
-        bookingId: booking.id,
-        bookingNumber: booking.bookingNumber,
-        propertyName: booking.room.property.name,
-        roomName: booking.room.name,
-        userName: booking.user.name,
-        userEmail: booking.user.email,
-        checkIn: booking.checkInDate,
-        checkOut: booking.checkOutDate,
-        guests: booking.numberOfGuests,
-        finalPrice: Number(booking.totalPrice),
-        status: booking.status,
-        createdAt: booking.createdAt,
-      }));
+      reportData = groupByTransaction(bookings);
     } else if (groupBy === 'user') {
-      // Group by user
-      const grouped = bookings.reduce((acc: any, booking) => {
-        const userId = booking.user.id;
-        const userName = booking.user.name;
-        const userEmail = booking.user.email;
-
-        if (!acc[userId]) {
-          acc[userId] = {
-            userId,
-            userName,
-            userEmail,
-            totalBookings: 0,
-            totalRevenue: 0,
-            bookings: [],
-          };
-        }
-
-        acc[userId].totalBookings += 1;
-        acc[userId].totalRevenue += Number(booking.totalPrice);
-        acc[userId].bookings.push({
-          bookingNumber: booking.bookingNumber,
-          propertyName: booking.room.property.name,
-          checkIn: booking.checkInDate,
-          checkOut: booking.checkOutDate,
-          finalPrice: Number(booking.totalPrice),
-          status: booking.status,
-        });
-
-        return acc;
-      }, {});
-
-      reportData = Object.values(grouped);
+      reportData = groupByUser(bookings);
+    } else {
+      return NextResponse.json(
+        { success: false, error: 'Invalid groupBy value. Use: property, transaction, or user' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
@@ -167,17 +125,103 @@ export async function GET(req: NextRequest) {
         summary: {
           totalRevenue,
           totalBookings,
-          averageBookingValue: totalBookings > 0 ? totalRevenue / totalBookings : 0,
+          averageBookingValue,
         },
         groupBy,
         reportData,
       },
     });
   } catch (error) {
-    console.error('Get sales report error:', error);
+    // Error logged but not exposed to client
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan saat mengambil sales report' },
       { status: 500 }
     );
   }
+}
+
+// Helper function: Group by property (under 15 lines)
+function groupByProperty(bookings: any[]) {
+  const grouped = bookings.reduce((acc: any, booking) => {
+    const propertyId = booking.room.property.id;
+    const propertyName = booking.room.property.name;
+
+    if (!acc[propertyId]) {
+      acc[propertyId] = {
+        propertyId,
+        propertyName,
+        totalBookings: 0,
+        totalRevenue: 0,
+        bookings: [],
+      };
+    }
+
+    acc[propertyId].totalBookings += 1;
+    acc[propertyId].totalRevenue += Number(booking.totalPrice);
+    acc[propertyId].bookings.push({
+      bookingNumber: booking.bookingNumber,
+      checkIn: booking.checkInDate,
+      checkOut: booking.checkOutDate,
+      guests: booking.numberOfGuests,
+      finalPrice: Number(booking.totalPrice),
+      status: booking.status,
+    });
+
+    return acc;
+  }, {});
+
+  return Object.values(grouped);
+}
+
+// Helper function: Group by transaction (under 15 lines)
+function groupByTransaction(bookings: any[]) {
+  return bookings.map((booking) => ({
+    bookingId: booking.id,
+    bookingNumber: booking.bookingNumber,
+    propertyName: booking.room.property.name,
+    roomName: booking.room.name,
+    userName: booking.user.name,
+    userEmail: booking.user.email,
+    checkIn: booking.checkInDate,
+    checkOut: booking.checkOutDate,
+    guests: booking.numberOfGuests,
+    finalPrice: Number(booking.totalPrice),
+    status: booking.status,
+    createdAt: booking.createdAt,
+  }));
+}
+
+// Helper function: Group by user (under 15 lines)
+function groupByUser(bookings: any[]) {
+  const grouped = bookings.reduce((acc: any, booking) => {
+    const userId = booking.user.id;
+    const userName = booking.user.name;
+    const userEmail = booking.user.email;
+
+    if (!acc[userId]) {
+      acc[userId] = {
+        userId,
+        userName,
+        userEmail,
+        totalBookings: 0,
+        totalRevenue: 0,
+        bookings: [],
+      };
+    }
+
+    acc[userId].totalBookings += 1;
+    acc[userId].totalRevenue += Number(booking.totalPrice);
+    acc[userId].bookings.push({
+      bookingNumber: booking.bookingNumber,
+      propertyName: booking.room.property.name,
+      checkIn: booking.checkInDate,
+      checkOut: booking.checkOutDate,
+      finalPrice: Number(booking.totalPrice),
+      status: booking.status,
+    });
+
+    return acc;
+  }, {});
+
+  return Object.values(grouped);
 }

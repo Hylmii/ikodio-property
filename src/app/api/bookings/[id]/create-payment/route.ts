@@ -15,9 +15,10 @@ export async function POST(
         { status: 401 }
       );
     }
+    
     const { id: bookingId } = await params;
 
-    // Get booking details
+    // Get booking details with relationships
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
@@ -49,37 +50,49 @@ export async function POST(
       );
     }
 
-    // Verify ownership
+    // Verify user owns this booking
     if (booking.userId !== session.user.id) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized - Anda tidak memiliki akses ke booking ini' },
+        { 
+          success: false, 
+          error: 'Unauthorized - Anda tidak memiliki akses ke booking ini' 
+        },
         { status: 403 }
       );
     }
 
-    // Check if booking is still waiting for payment
+    // Check booking status
     if (booking.status !== 'WAITING_PAYMENT') {
       return NextResponse.json(
-        { success: false, error: `Booking tidak dalam status WAITING_PAYMENT (status: ${booking.status})` },
+        { 
+          success: false, 
+          error: `Booking tidak dalam status WAITING_PAYMENT (status: ${booking.status})` 
+        },
         { status: 400 }
       );
     }
 
-    // Check if payment deadline has passed
+    // Check payment deadline
     if (new Date() > booking.paymentDeadline) {
-      // Update booking to CANCELLED
       await prisma.booking.update({
         where: { id: bookingId },
-        data: { status: 'CANCELLED' },
+        data: { 
+          status: 'CANCELLED',
+          cancelledAt: new Date(),
+          cancellationReason: 'PAYMENT_TIMEOUT',
+        },
       });
 
       return NextResponse.json(
-        { success: false, error: 'Payment deadline telah lewat. Booking dibatalkan.' },
+        { 
+          success: false, 
+          error: 'Payment deadline telah lewat. Booking dibatalkan.' 
+        },
         { status: 400 }
       );
     }
 
-    // Calculate nights
+    // Calculate nights for item details
     const nights = Math.ceil(
       (booking.checkOutDate.getTime() - booking.checkInDate.getTime()) / 
       (1000 * 60 * 60 * 24)
@@ -89,12 +102,17 @@ export async function POST(
     const serverKey = process.env.MIDTRANS_SERVER_KEY;
     const clientKey = process.env.MIDTRANS_CLIENT_KEY;
 
-    if (!serverKey || !clientKey || serverKey.includes('YOUR_SERVER_KEY') || clientKey.includes('YOUR_CLIENT_KEY')) {
+    if (
+      !serverKey || 
+      !clientKey || 
+      serverKey.includes('YOUR_SERVER_KEY') || 
+      clientKey.includes('YOUR_CLIENT_KEY')
+    ) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Midtrans credentials not configured. Please set up your Midtrans account and update the .env file with valid keys.',
-          details: 'MIDTRANS_SERVER_KEY and MIDTRANS_CLIENT_KEY must be set with valid values from https://dashboard.sandbox.midtrans.com/'
+          error: 'Midtrans credentials not configured',
+          details: 'Please set up MIDTRANS_SERVER_KEY and MIDTRANS_CLIENT_KEY in .env'
         },
         { status: 500 }
       );
@@ -107,7 +125,7 @@ export async function POST(
       customerDetails: {
         firstName: booking.user.name || 'Guest',
         email: booking.user.email,
-        phone: session.user.email || '', // Using email as fallback if phone not available
+        phone: session.user.email || '',
       },
       itemDetails: [
         {
@@ -120,7 +138,6 @@ export async function POST(
     });
 
     if (!midtransResult.success) {
-      console.error('Midtrans transaction failed:', midtransResult.error);
       return NextResponse.json(
         { 
           success: false, 
@@ -130,15 +147,6 @@ export async function POST(
         { status: 500 }
       );
     }
-
-    // Save Midtrans token to booking (optional - for tracking)
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        // You might want to add a midtransToken field to your Booking model
-        // midtransToken: midtransResult.token,
-      },
-    });
 
     return NextResponse.json({
       success: true,
@@ -150,7 +158,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error('Create Midtrans payment error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan saat membuat payment' },
       { status: 500 }

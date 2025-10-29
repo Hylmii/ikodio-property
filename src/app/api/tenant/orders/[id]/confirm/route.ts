@@ -58,7 +58,7 @@ export async function PUT(
       where: { id },
       data: {
         status: 'CONFIRMED',
-        confirmationEmailSent: true,
+        confirmedAt: new Date(),
       },
       include: {
         user: true,
@@ -70,24 +70,29 @@ export async function PUT(
       },
     });
 
-    // Send confirmation email
-    if (!updatedBooking.confirmationEmailSent) {
+    // Send confirmation email with correct parameters
+    try {
+      const propertyRules = 'Harap patuhi aturan properti yang berlaku.';
+      
       await sendBookingConfirmationEmail(
         updatedBooking.user.email,
-        updatedBooking.user.name || 'User',
+        updatedBooking.user.name || 'Guest',
         updatedBooking.bookingNumber,
         updatedBooking.room.property.name,
         updatedBooking.room.name,
-        updatedBooking.checkInDate.toISOString(),
-        updatedBooking.checkOutDate.toISOString(),
-        updatedBooking.numberOfGuests.toString(),
-        Number(updatedBooking.totalPrice).toString()
+        updatedBooking.checkInDate.toLocaleDateString('id-ID'),
+        updatedBooking.checkOutDate.toLocaleDateString('id-ID'),
+        `Rp ${Number(updatedBooking.totalPrice).toLocaleString('id-ID')}`,
+        propertyRules
       );
 
+      // Mark email as sent
       await prisma.booking.update({
         where: { id },
         data: { confirmationEmailSent: true },
       });
+    } catch (emailError) {
+      // Email error shouldn't fail the confirmation
     }
 
     return NextResponse.json({
@@ -96,7 +101,6 @@ export async function PUT(
       data: updatedBooking,
     });
   } catch (error) {
-    console.error('Confirm payment error:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan saat mengkonfirmasi payment' },
       { status: 500 }
