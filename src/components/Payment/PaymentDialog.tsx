@@ -33,28 +33,29 @@ export function PaymentDialog({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const validateAndPreviewFile = (file: File) => {
+  const validateFile = (file: File) => {
     if (!file.type.match(/image\/(jpeg|jpg|png)/)) {
-      toast({ title: 'File Tidak Valid', description: 'Hanya file JPG/PNG yang diperbolehkan', variant: 'destructive' });
+      toast({ title: 'File Tidak Valid', description: 'Hanya JPG/PNG', variant: 'destructive' });
       return false;
     }
     if (file.size > 1024 * 1024) {
-      toast({ title: 'File Terlalu Besar', description: 'Maksimal ukuran file 1MB', variant: 'destructive' });
+      toast({ title: 'File Terlalu Besar', description: 'Max 1MB', variant: 'destructive' });
       return false;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewUrl(reader.result as string);
-    reader.readAsDataURL(file);
-    setSelectedFile(file);
     return true;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) validateAndPreviewFile(file);
+    if (file && validateFile(file)) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewUrl(reader.result as string);
+      reader.readAsDataURL(file);
+      setSelectedFile(file);
+    }
   };
 
-  const handleUploadConfirm = () => {
+  const handleUpload = () => {
     if (selectedFile) {
       onManualUpload(selectedFile);
       setSelectedFile(null);
@@ -68,18 +69,19 @@ export function PaymentDialog({
     onClose();
   };
 
+  const formatRupiah = (value: number) => 
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg max-h-[95vh] overflow-y-auto bg-white border shadow-2xl">
+      <DialogContent className="max-w-lg max-h-[95vh] overflow-y-auto bg-white">
         <div className="bg-gradient-to-r from-blue-50 to-white p-4 -mt-6 -mx-6 mb-4 border-b">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <CreditCard className="h-6 w-6 text-blue-600" />
               Pilih Metode Pembayaran
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
-              Pilih cara pembayaran yang Anda inginkan
-            </DialogDescription>
+            <DialogDescription>Pilih cara pembayaran yang Anda inginkan</DialogDescription>
           </DialogHeader>
         </div>
 
@@ -133,24 +135,14 @@ export function PaymentDialog({
               </div>
               <div className="pt-3 border-t bg-green-50 -mx-4 -mb-4 px-4 pb-4">
                 <p className="text-xs text-green-600 uppercase">Jumlah Transfer</p>
-                <p className="text-xl font-bold text-green-700">
-                  {new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0,
-                  }).format(amount)}
-                </p>
+                <p className="text-xl font-bold text-green-700">{formatRupiah(amount)}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div>
-                <Label htmlFor="payment-proof" className="font-semibold">
-                  Upload Bukti Transfer
-                </Label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Format: JPG/PNG • Max 1MB
-                </p>
+                <Label htmlFor="payment-proof" className="font-semibold">Upload Bukti Transfer</Label>
+                <p className="text-xs text-gray-500 mb-2">Format: JPG/PNG • Max 1MB</p>
                 <Input
                   id="payment-proof"
                   type="file"
@@ -164,16 +156,12 @@ export function PaymentDialog({
               {previewUrl && (
                 <div className="space-y-2">
                   <Label>Preview</Label>
-                  <img 
-                    src={previewUrl} 
-                    alt="Payment proof preview" 
-                    className="w-full max-h-32 object-contain border rounded"
-                  />
+                  <img src={previewUrl} alt="Preview" className="w-full max-h-32 object-contain border rounded" />
                 </div>
               )}
 
               <Button
-                onClick={handleUploadConfirm}
+                onClick={handleUpload}
                 disabled={!selectedFile || isUploading}
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 size="lg"

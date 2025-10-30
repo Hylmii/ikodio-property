@@ -1,8 +1,6 @@
-'use client';
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard } from 'lucide-react';
+import { Package, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface EmptyStateProps {
@@ -10,23 +8,31 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ hasBookings }: EmptyStateProps) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <CreditCard className="h-16 w-16 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">
-          {hasBookings ? 'Tidak Ada Hasil' : 'Belum Ada Transaksi'}
-        </h3>
-        <p className="text-muted-foreground mb-4">
-          {hasBookings 
-            ? 'Tidak ada transaksi yang sesuai dengan pencarian Anda' 
-            : 'Anda belum memiliki transaksi apapun'}
-        </p>
-        {!hasBookings && (
+  if (!hasBookings) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <Package className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Belum Ada Transaksi</h3>
+          <p className="text-muted-foreground text-center mb-6">
+            Anda belum memiliki transaksi. Mulai booking properti sekarang!
+          </p>
           <Button asChild>
             <Link href="/properties">Cari Properti</Link>
           </Button>
-        )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-16">
+        <Search className="h-16 w-16 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Tidak Ada Hasil</h3>
+        <p className="text-muted-foreground text-center">
+          Tidak ada transaksi yang cocok dengan pencarian Anda
+        </p>
       </CardContent>
     </Card>
   );

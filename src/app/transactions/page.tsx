@@ -9,17 +9,19 @@ import { TransactionFilters } from '@/components/Transactions/TransactionFilters
 import { TransactionCard } from '@/components/Transactions/TransactionCard';
 import { ReviewDialog } from '@/components/Transactions/ReviewDialog';
 import { EmptyState } from '@/components/Transactions/EmptyState';
+import { OrderStatus } from '@prisma/client';
 
-interface Booking {
+interface BookingData {
   id: string;
-  bookingDate: string;
-  checkInDate: string;
-  checkOutDate: string;
-  guestCount: number;
+  bookingNumber: string;
+  checkInDate: Date | string;
+  checkOutDate: Date | string;
+  numberOfGuests: number;
   totalPrice: number;
-  status: 'WAITING_PAYMENT' | 'WAITING_CONFIRMATION' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: OrderStatus;
   paymentProof: string | null;
-  paymentDeadline: string | null;
+  paymentDeadline: Date | string;
+  paymentMethod?: 'MANUAL' | 'MIDTRANS' | null;
   room: {
     id: string;
     name: string;
@@ -36,14 +38,16 @@ export default function TransactionsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+
+  const [bookings, setBookings] = useState<BookingData[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingData | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -51,20 +55,20 @@ export default function TransactionsPage() {
     } else if (status === 'authenticated') {
       fetchBookings();
     }
-  }, [status]);
+  }, [status, router]);
 
   useEffect(() => {
     applyFilters();
-  }, [bookings, searchQuery, startDate, endDate]);
+  }, [bookings, searchQuery, startDate, endDate, statusFilter]);
 
   const fetchBookings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/bookings');
-      const data = await response.json();
-      if (response.ok) setBookings(data.data);
-    } catch (error) {
-      console.error('Error fetching bookings:', error);
+      const res = await fetch('/api/bookings');
+      const data = await res.json();
+      if (res.ok) setBookings(data.data);
+    } catch {
+      showError('Gagal memuat transaksi');
     } finally {
       setIsLoading(false);
     }
@@ -74,104 +78,64 @@ export default function TransactionsPage() {
     let filtered = [...bookings];
 
     if (searchQuery) {
-      filtered = filtered.filter(booking =>
-        booking.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        booking.room.property.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filterBySearch(filtered, searchQuery);
     }
-
+    if (statusFilter !== 'ALL') {
+      filtered = filtered.filter(b => b.status === statusFilter);
+    }
     if (startDate) {
-      filtered = filtered.filter(booking => new Date(booking.bookingDate) >= new Date(startDate));
+      filtered = filtered.filter(b => new Date(b.checkInDate) >= new Date(startDate));
     }
-
     if (endDate) {
-      filtered = filtered.filter(booking => new Date(booking.bookingDate) <= new Date(endDate));
+      filtered = filtered.filter(b => new Date(b.checkInDate) <= new Date(endDate));
     }
 
     setFilteredBookings(filtered);
   };
 
-  const handlePaymentUpload = async (bookingId: string, file: File) => {
-    setUploadingId(bookingId);
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'payment');
-
-      const uploadResponse = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const uploadData = await uploadResponse.json();
-
-      if (!uploadResponse.ok) {
-        throw new Error(uploadData.error || 'Gagal upload bukti pembayaran');
-      }
-
-      const updateResponse = await fetch(`/api/bookings/${bookingId}/payment`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentProof: uploadData.data.url }),
-      });
-
-      const updateData = await updateResponse.json();
-
-      if (!updateResponse.ok) {
-        throw new Error(updateData.error || 'Gagal update bukti pembayaran');
-      }
-
-      toast({ title: 'Berhasil', description: 'Bukti pembayaran berhasil diupload' });
-      fetchBookings();
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } finally {
-      setUploadingId(null);
-    }
-  };
-
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Apakah Anda yakin ingin membatalkan booking ini?')) return;
+    if (!confirm('Yakin ingin membatalkan booking ini?')) return;
 
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
-        method: 'PUT',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Gagal membatalkan booking');
-      }
+      const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: 'PUT' });
+      if (!res.ok) throw new Error((await res.json()).error);
 
       toast({ title: 'Berhasil', description: 'Booking berhasil dibatalkan' });
       fetchBookings();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      showError(error.message);
     }
   };
 
-  const handleSubmitReview = async (bookingId: string, propertyId: string, rating: number, comment: string) => {
+  const handleReviewClick = (booking: BookingData) => {
+    setSelectedBooking(booking);
+  };
+
+  const handleSubmitReview = async (
+    bookingId: string,
+    propertyId: string,
+    rating: number,
+    comment: string
+  ) => {
     try {
-      const response = await fetch('/api/reviews', {
+      const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ propertyId, bookingId, rating, comment }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Gagal mengirim review');
-      }
+      if (!res.ok) throw new Error((await res.json()).error);
 
       toast({ title: 'Berhasil', description: 'Review berhasil dikirim' });
       setSelectedBooking(null);
       fetchBookings();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      showError(error.message);
     }
+  };
+
+  const showError = (message: string) => {
+    toast({ title: 'Error', description: message, variant: 'destructive' });
   };
 
   if (status === 'loading' || isLoading) {
@@ -191,9 +155,11 @@ export default function TransactionsPage() {
           searchQuery={searchQuery}
           startDate={startDate}
           endDate={endDate}
+          statusFilter={statusFilter}
           onSearchChange={setSearchQuery}
           onStartDateChange={setStartDate}
           onEndDateChange={setEndDate}
+          onStatusChange={setStatusFilter}
         />
 
         {filteredBookings.length === 0 ? (
@@ -204,10 +170,9 @@ export default function TransactionsPage() {
               <TransactionCard
                 key={booking.id}
                 booking={booking}
-                uploadingId={uploadingId}
-                onPaymentUpload={handlePaymentUpload}
                 onCancel={handleCancelBooking}
-                onReview={setSelectedBooking}
+                onReview={handleReviewClick}
+                onRefresh={fetchBookings}
               />
             ))}
           </div>
@@ -221,5 +186,15 @@ export default function TransactionsPage() {
         />
       </div>
     </div>
+  );
+}
+
+function filterBySearch(bookings: BookingData[], query: string): BookingData[] {
+  const lowerQuery = query.toLowerCase();
+  return bookings.filter(
+    b =>
+      b.bookingNumber.toLowerCase().includes(lowerQuery) ||
+      b.room.property.name.toLowerCase().includes(lowerQuery) ||
+      b.room.name.toLowerCase().includes(lowerQuery)
   );
 }
