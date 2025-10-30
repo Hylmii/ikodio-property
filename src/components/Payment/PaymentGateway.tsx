@@ -25,91 +25,107 @@ export function PaymentGateway({ bookingId, amount, onSuccess, onError }: Paymen
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   useEffect(() => {
-    // Load Midtrans Snap script
-    const script = document.createElement('script');
-    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '');
-    script.onload = () => setIsScriptLoaded(true);
-    script.onerror = () => {
-      toast({
-        title: 'Error',
-        description: 'Gagal memuat payment gateway',
-        variant: 'destructive',
-      });
-    };
-    document.body.appendChild(script);
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+    
+    if (!clientKey) {
+      showError('Midtrans client key tidak ditemukan');
+      return;
+    }
 
-    return () => {
-      document.body.removeChild(script);
-    };
+    if (window.snap) {
+      setIsScriptLoaded(true);
+      return;
+    }
+
+    loadSnapScript(clientKey);
   }, []);
 
+  const loadSnapScript = (clientKey: string) => {
+    const script = document.createElement('script');
+    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    script.setAttribute('data-client-key', clientKey);
+    
+    script.onload = () => setIsScriptLoaded(true);
+    script.onerror = () => {
+      showError('Gagal memuat payment gateway');
+      if (onError) onError('Script load failed');
+    };
+    
+    document.body.appendChild(script);
+  };
+
+  const showError = (message: string) => {
+    toast({
+      title: 'Error',
+      description: message,
+      variant: 'destructive',
+    });
+  };
+
   const handlePayment = async () => {
-    if (!isScriptLoaded) {
-      toast({
-        title: 'Payment Gateway Belum Siap',
-        description: 'Mohon tunggu sebentar...',
-        variant: 'destructive',
-      });
+    if (!isScriptLoaded || !window.snap) {
+      showError('Mohon tunggu atau refresh halaman');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Create payment token from backend
-      const response = await fetch('/api/payment/create-transaction', {
+      const response = await fetch(`/api/bookings/${bookingId}/create-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookingId,
-          amount,
-        }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Gagal membuat transaksi');
+        throw new Error(result.error || 'Gagal membuat transaksi');
       }
 
-      // Open Midtrans Snap popup
-      window.snap.pay(data.token, {
-        onSuccess: function (result: any) {
-          toast({
-            title: 'Pembayaran Berhasil',
-            description: 'Transaksi Anda telah berhasil diproses',
-          });
-          if (onSuccess) onSuccess();
-        },
-        onPending: function (result: any) {
-          toast({
-            title: 'Pembayaran Pending',
-            description: 'Menunggu pembayaran Anda',
-          });
-        },
-        onError: function (result: any) {
-          toast({
-            title: 'Pembayaran Gagal',
-            description: 'Terjadi kesalahan saat memproses pembayaran',
-            variant: 'destructive',
-          });
-          if (onError) onError('Payment failed');
-        },
-        onClose: function () {
-          setIsLoading(false);
-        },
-      });
+      // FIXED: Handle token at root or in data object
+      const token = result.token || result.data?.token;
+      
+      if (!token) {
+        throw new Error('Token pembayaran tidak ditemukan');
+      }
+
+      openSnapPopup(token);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      showError(error.message);
       if (onError) onError(error.message);
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const openSnapPopup = (token: string) => {
+    window.snap.pay(token, {
+      onSuccess: () => {
+        toast({
+          title: 'Pembayaran Berhasil!',
+          description: 'Transaksi berhasil diproses',
+        });
+        if (onSuccess) onSuccess();
+      },
+      onPending: () => {
+        toast({
+          title: 'Pembayaran Pending',
+          description: 'Menunggu konfirmasi pembayaran',
+        });
+        if (onSuccess) onSuccess();
+      },
+      onError: (result: any) => {
+        showError(result?.status_message || 'Pembayaran gagal');
+        if (onError) onError(result?.status_message || 'Payment failed');
+        setIsLoading(false);
+      },
+      onClose: () => {
+        toast({
+          title: 'Pembayaran Dibatalkan',
+          description: 'Anda menutup jendela pembayaran',
+        });
+        setIsLoading(false);
+      },
+    });
   };
 
   return (
@@ -120,7 +136,7 @@ export function PaymentGateway({ bookingId, amount, onSuccess, onError }: Paymen
           Pembayaran Online
         </CardTitle>
         <CardDescription>
-          Bayar dengan kartu kredit, transfer bank, atau e-wallet
+          Bayar dengan kartu kredit, transfer bank, e-wallet, atau QRIS
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -131,6 +147,7 @@ export function PaymentGateway({ bookingId, amount, onSuccess, onError }: Paymen
               {new Intl.NumberFormat('id-ID', {
                 style: 'currency',
                 currency: 'IDR',
+                minimumFractionDigits: 0,
               }).format(amount)}
             </span>
           </div>
@@ -146,6 +163,11 @@ export function PaymentGateway({ bookingId, amount, onSuccess, onError }: Paymen
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Memproses...
               </>
+            ) : !isScriptLoaded ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Memuat Payment Gateway...
+              </>
             ) : (
               <>
                 <CreditCard className="mr-2 h-5 w-5" />
@@ -154,9 +176,14 @@ export function PaymentGateway({ bookingId, amount, onSuccess, onError }: Paymen
             )}
           </Button>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <span>Pembayaran aman dengan Midtrans</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <span>Pembayaran aman dengan Midtrans</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Mendukung berbagai metode: BCA, Mandiri, BRI, BNI, Gopay, OVO, QRIS
+            </p>
           </div>
         </div>
       </CardContent>
