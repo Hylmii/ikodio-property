@@ -1,13 +1,9 @@
-// src/components/Transactions/TransactionCard.tsx
-// COMPLETE VERSION - Fixed type matching
-// Line count: 175 lines ✅
-
 'use client';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, CreditCard, X, Star } from 'lucide-react';
+import { Calendar, MapPin, Users, CreditCard, X, Star, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/formatDate';
@@ -54,14 +50,22 @@ export function TransactionCard({ booking, onCancel, onReview, onRefresh }: Tran
     onRefresh();
   };
 
+  const propertyImage = booking.room?.property?.images?.[0];
+  const hasImage = propertyImage && propertyImage.length > 0;
+
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row gap-4">
-          <PropertyImage src={booking.room.property.images[0]} alt={booking.room.property.name} />
+          <PropertyImage 
+            src={hasImage ? propertyImage : null} 
+            alt={booking.room.property.name} 
+          />
+
           <div className="flex-1">
             <PropertyInfo booking={booking} />
           </div>
+
           <div className="flex gap-2 flex-wrap">
             <StatusBadge status={booking.status} />
             {booking.paymentMethod && <PaymentMethodBadge method={booking.paymentMethod} />}
@@ -71,7 +75,11 @@ export function TransactionCard({ booking, onCancel, onReview, onRefresh }: Tran
 
       <CardContent className="space-y-3">
         <BookingDetails booking={booking} />
-        {booking.status === 'WAITING_PAYMENT' && <PaymentWarning deadline={booking.paymentDeadline} />}
+
+        {booking.status === 'WAITING_PAYMENT' && (
+          <PaymentDeadlineWarning deadline={booking.paymentDeadline} />
+        )}
+
         {booking.paymentProof && <PaymentProofIndicator />}
       </CardContent>
 
@@ -97,10 +105,26 @@ export function TransactionCard({ booking, onCancel, onReview, onRefresh }: Tran
   );
 }
 
-function PropertyImage({ src, alt }: { src: string; alt: string }) {
+// Helper Components
+
+function PropertyImage({ src, alt }: { src: string | null; alt: string }) {
+  if (!src) {
+    return (
+      <div className="relative w-full sm:w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+        <ImageIcon className="h-8 w-8 text-slate-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full sm:w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-      <Image src={src || '/placeholder.jpg'} alt={alt} fill className="object-cover" />
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover"
+        unoptimized={src.startsWith('http')}
+      />
     </div>
   );
 }
@@ -124,9 +148,21 @@ function PropertyInfo({ booking }: { booking: Booking }) {
 function BookingDetails({ booking }: { booking: Booking }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-      <DetailItem icon={<Calendar className="h-3 w-3" />} label="Check-in" value={formatDate(booking.checkInDate)} />
-      <DetailItem icon={<Calendar className="h-3 w-3" />} label="Check-out" value={formatDate(booking.checkOutDate)} />
-      <DetailItem icon={<Users className="h-3 w-3" />} label="Tamu" value={`${booking.numberOfGuests} orang`} />
+      <DetailItem
+        icon={<Calendar className="h-3 w-3" />}
+        label="Check-in"
+        value={formatDate(booking.checkInDate)}
+      />
+      <DetailItem
+        icon={<Calendar className="h-3 w-3" />}
+        label="Check-out"
+        value={formatDate(booking.checkOutDate)}
+      />
+      <DetailItem
+        icon={<Users className="h-3 w-3" />}
+        label="Tamu"
+        value={`${booking.numberOfGuests} orang`}
+      />
       <DetailItem
         icon={<CreditCard className="h-3 w-3" />}
         label="Total"
@@ -158,18 +194,21 @@ function ActionButtons({ booking, onPayClick, onCancelClick, onReviewClick }: an
           Bayar Sekarang
         </Button>
       )}
+
       {(booking.status === 'WAITING_PAYMENT' || booking.status === 'WAITING_CONFIRMATION') && (
         <Button variant="outline" onClick={onCancelClick}>
           <X className="mr-2 h-4 w-4" />
           Batalkan
         </Button>
       )}
+
       {booking.status === 'COMPLETED' && (
         <Button onClick={onReviewClick}>
           <Star className="mr-2 h-4 w-4" />
           Beri Review
         </Button>
       )}
+
       <Button variant="outline" asChild>
         <Link href={`/properties/${booking.room.property.id}`}>Lihat Properti</Link>
       </Button>
@@ -198,7 +237,7 @@ function PaymentMethodBadge({ method }: { method: 'MANUAL' | 'MIDTRANS' }) {
   );
 }
 
-function PaymentWarning({ deadline }: { deadline: Date | string }) {
+function PaymentDeadlineWarning({ deadline }: { deadline: Date | string }) {
   const timeLeft = calculateTimeLeft(deadline);
   return (
     <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">

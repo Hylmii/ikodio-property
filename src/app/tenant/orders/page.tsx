@@ -9,22 +9,24 @@ import { OrderFilters } from '@/components/TenantOrders/OrderFilters';
 import { OrderCard } from '@/components/TenantOrders/OrderCard';
 import { ConfirmDialog } from '@/components/TenantOrders/ConfirmDialog';
 import { RejectDialog } from '@/components/TenantOrders/RejectDialog';
+import { CancelDialog } from '@/components/TenantOrders/CancelDialog';
+import { OrderStatus } from '@prisma/client';
 
 interface Order {
   id: string;
-  bookingDate: string;
-  checkInDate: string;
-  checkOutDate: string;
-  guestCount: number;
+  bookingNumber: string;
+  checkInDate: string | Date;
+  checkOutDate: string | Date;
+  numberOfGuests: number;
   totalPrice: number;
-  status: 'WAITING_PAYMENT' | 'WAITING_CONFIRMATION' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: OrderStatus;
   paymentProof: string | null;
-  paymentDeadline?: string | null;
+  paymentMethod?: 'MANUAL' | 'MIDTRANS' | null;
   user: {
     id: string;
     name: string;
     email: string;
-    phone: string;
+    phone?: string;
   };
   room: {
     id: string;
@@ -42,15 +44,19 @@ export default function TenantOrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -63,7 +69,7 @@ export default function TenantOrdersPage() {
         fetchOrders();
       }
     }
-  }, [status]);
+  }, [status, router]);
 
   useEffect(() => {
     filterOrders();
@@ -72,20 +78,11 @@ export default function TenantOrdersPage() {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/tenant/orders');
-      const data = await response.json();
-      
-      console.log('Fetch orders response:', response.ok);
-      console.log('Fetch orders data:', data);
-      
-      if (response.ok) {
-        setOrders(data.data || []);
-        console.log('Orders set:', data.data?.length || 0);
-      } else {
-        console.error('Failed to fetch orders:', data);
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
+      const res = await fetch('/api/tenant/orders');
+      const data = await res.json();
+      if (res.ok) setOrders(data.data || []);
+    } catch {
+      showError('Gagal memuat pesanan');
     } finally {
       setIsLoading(false);
     }
@@ -95,15 +92,11 @@ export default function TenantOrdersPage() {
     let filtered = orders;
 
     if (activeTab !== 'all') {
-      filtered = filtered.filter(order => order.status === activeTab);
+      filtered = filtered.filter(o => o.status === activeTab);
     }
 
     if (searchQuery) {
-      filtered = filtered.filter(order =>
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.room.property.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filterBySearch(filtered, searchQuery);
     }
 
     setFilteredOrders(filtered);
@@ -113,24 +106,15 @@ export default function TenantOrdersPage() {
     if (!selectedOrder) return;
 
     setIsProcessing(true);
-
     try {
-      const response = await fetch(`/api/tenant/orders/${selectedOrder.id}/confirm`, {
-        method: 'PUT',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Gagal konfirmasi pembayaran');
-      }
+      const res = await fetch(`/api/tenant/orders/${selectedOrder.id}/confirm`, { method: 'PUT' });
+      if (!res.ok) throw new Error((await res.json()).error);
 
       toast({ title: 'Berhasil', description: 'Pembayaran berhasil dikonfirmasi' });
-      setIsConfirmDialogOpen(false);
-      setSelectedOrder(null);
+      closeDialogs();
       fetchOrders();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      showError(error.message);
     } finally {
       setIsProcessing(false);
     }
@@ -138,35 +122,67 @@ export default function TenantOrdersPage() {
 
   const handleRejectPayment = async () => {
     if (!selectedOrder || !rejectReason.trim()) {
-      toast({ title: 'Error', description: 'Alasan penolakan harus diisi', variant: 'destructive' });
+      showError('Alasan penolakan harus diisi');
       return;
     }
 
     setIsProcessing(true);
-
     try {
-      const response = await fetch(`/api/tenant/orders/${selectedOrder.id}/reject`, {
+      const res = await fetch(`/api/tenant/orders/${selectedOrder.id}/reject`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: rejectReason }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Gagal menolak pembayaran');
-      }
+      if (!res.ok) throw new Error((await res.json()).error);
 
       toast({ title: 'Berhasil', description: 'Pembayaran berhasil ditolak' });
-      setIsRejectDialogOpen(false);
-      setSelectedOrder(null);
-      setRejectReason('');
+      closeDialogs();
       fetchOrders();
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      showError(error.message);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrder || !cancelReason.trim()) {
+      showError('Alasan pembatalan harus diisi');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`/api/tenant/orders/${selectedOrder.id}/cancel`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+
+      if (!res.ok) throw new Error((await res.json()).error);
+
+      toast({ title: 'Berhasil', description: 'Pesanan berhasil dibatalkan' });
+      closeDialogs();
+      fetchOrders();
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const closeDialogs = () => {
+    setIsConfirmDialogOpen(false);
+    setIsRejectDialogOpen(false);
+    setIsCancelDialogOpen(false);
+    setSelectedOrder(null);
+    setRejectReason('');
+    setCancelReason('');
+  };
+
+  const showError = (message: string) => {
+    toast({ title: 'Error', description: message, variant: 'destructive' });
   };
 
   const getStats = () => ({
@@ -177,11 +193,7 @@ export default function TenantOrdersPage() {
   });
 
   if (status === 'loading' || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -198,23 +210,16 @@ export default function TenantOrdersPage() {
         />
 
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12 text-slate-500">
-            {searchQuery ? 'Tidak ada pesanan yang sesuai dengan pencarian' : 'Belum ada pesanan'}
-          </div>
+          <EmptyState hasSearch={!!searchQuery} />
         ) : (
           <div className="space-y-4">
             {filteredOrders.map((order) => (
               <OrderCard
                 key={order.id}
                 order={order}
-                onConfirm={(order) => {
-                  setSelectedOrder(order);
-                  setIsConfirmDialogOpen(true);
-                }}
-                onReject={(order) => {
-                  setSelectedOrder(order);
-                  setIsRejectDialogOpen(true);
-                }}
+                onConfirm={(o) => { setSelectedOrder(o); setIsConfirmDialogOpen(true); }}
+                onReject={(o) => { setSelectedOrder(o); setIsRejectDialogOpen(true); }}
+                onCancel={(o) => { setSelectedOrder(o); setIsCancelDialogOpen(true); }}
               />
             ))}
           </div>
@@ -224,10 +229,7 @@ export default function TenantOrdersPage() {
           open={isConfirmDialogOpen}
           order={selectedOrder}
           isProcessing={isProcessing}
-          onClose={() => {
-            setIsConfirmDialogOpen(false);
-            setSelectedOrder(null);
-          }}
+          onClose={closeDialogs}
           onConfirm={handleConfirmPayment}
         />
 
@@ -235,15 +237,49 @@ export default function TenantOrdersPage() {
           open={isRejectDialogOpen}
           rejectReason={rejectReason}
           isProcessing={isProcessing}
-          onClose={() => {
-            setIsRejectDialogOpen(false);
-            setSelectedOrder(null);
-            setRejectReason('');
-          }}
+          onClose={closeDialogs}
           onReasonChange={setRejectReason}
           onReject={handleRejectPayment}
         />
+
+        <CancelDialog
+          open={isCancelDialogOpen}
+          order={selectedOrder}
+          cancelReason={cancelReason}
+          isProcessing={isProcessing}
+          onClose={closeDialogs}
+          onReasonChange={setCancelReason}
+          onCancel={handleCancelOrder}
+        />
       </div>
+    </div>
+  );
+}
+
+// Helper Functions
+
+function filterBySearch(orders: Order[], query: string): Order[] {
+  const lowerQuery = query.toLowerCase();
+  return orders.filter(
+    o =>
+      o.bookingNumber.toLowerCase().includes(lowerQuery) ||
+      o.user.name.toLowerCase().includes(lowerQuery) ||
+      o.room.property.name.toLowerCase().includes(lowerQuery)
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
+function EmptyState({ hasSearch }: { hasSearch: boolean }) {
+  return (
+    <div className="text-center py-12 text-slate-500">
+      {hasSearch ? 'Tidak ada pesanan yang sesuai dengan pencarian' : 'Belum ada pesanan'}
     </div>
   );
 }
