@@ -68,6 +68,10 @@ export function TransactionCard({
     );
   };
 
+  const isPaymentExpired = (deadline: string) => {
+    return new Date(deadline) < new Date();
+  };
+
   const getRemainingTime = (deadline: string) => {
     const now = new Date();
     const deadlineDate = new Date(deadline);
@@ -79,6 +83,20 @@ export function TransactionCard({
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     return `${hours}j ${minutes}m`;
+  };
+
+  const canCancelBooking = () => {
+    // Cannot cancel if already confirmed, completed, or cancelled
+    if (['CONFIRMED', 'COMPLETED', 'CANCELLED'].includes(booking.status)) {
+      return false;
+    }
+    
+    // Cannot cancel if payment deadline has expired
+    if (booking.paymentDeadline && isPaymentExpired(booking.paymentDeadline)) {
+      return false;
+    }
+    
+    return true;
   };
 
   return (
@@ -148,8 +166,16 @@ export function TransactionCard({
         </div>
 
         {booking.status === 'WAITING_PAYMENT' && booking.paymentDeadline && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+          <div className={`p-3 rounded-lg ${
+            isPaymentExpired(booking.paymentDeadline)
+              ? 'bg-red-50 dark:bg-red-900/20'
+              : 'bg-yellow-50 dark:bg-yellow-900/20'
+          }`}>
+            <p className={`text-sm ${
+              isPaymentExpired(booking.paymentDeadline)
+                ? 'text-red-800 dark:text-red-200'
+                : 'text-yellow-800 dark:text-yellow-200'
+            }`}>
               Batas waktu pembayaran: {getRemainingTime(booking.paymentDeadline)}
             </p>
           </div>
@@ -164,7 +190,7 @@ export function TransactionCard({
       </CardContent>
 
       <CardFooter className="flex flex-wrap gap-2">
-        {booking.status === 'WAITING_PAYMENT' && !booking.paymentProof && (
+        {booking.status === 'WAITING_PAYMENT' && !booking.paymentProof && !isPaymentExpired(booking.paymentDeadline || '') && (
           <>
             <Button onClick={() => setIsPaymentDialogOpen(true)}>
               <CreditCard className="mr-2 h-4 w-4" />
@@ -173,7 +199,7 @@ export function TransactionCard({
           </>
         )}
 
-        {(booking.status === 'WAITING_PAYMENT' || booking.status === 'WAITING_CONFIRMATION') && (
+        {canCancelBooking() && (
           <Button variant="outline" onClick={() => onCancel(booking.id)}>
             <X className="mr-2 h-4 w-4" />
             Batalkan

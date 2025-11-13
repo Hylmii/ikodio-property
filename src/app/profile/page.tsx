@@ -5,10 +5,11 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, Ticket, Lock } from 'lucide-react';
 import { ProfileHeader } from '@/components/Profile/ProfileHeader';
 import { ProfileInfoForm } from '@/components/Profile/ProfileInfoForm';
 import { PasswordChangeForm } from '@/components/Profile/PasswordChangeForm';
+import { BookingsSection } from '@/components/Profile/BookingsSection';
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -23,12 +25,14 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login-user');
     } else if (status === 'authenticated') {
       fetchProfile();
+      fetchBookings();
     }
   }, [status]);
 
@@ -45,6 +49,22 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchBookings = async () => {
+    setIsLoadingBookings(true);
+    try {
+      const response = await fetch('/api/bookings');
+      const data = await response.json();
+
+      if (response.ok) {
+        setBookings(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setIsLoadingBookings(false);
     }
   };
 
@@ -161,14 +181,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8">
         <ProfileHeader name={name} email={email} avatar={avatar} onAvatarChange={handleAvatarChange} />
 
-        <Tabs defaultValue="profile" className="max-w-2xl">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profile">Profil</TabsTrigger>
-            <TabsTrigger value="password">Password</TabsTrigger>
+        <Tabs defaultValue="profile" className="max-w-4xl">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Profil</span>
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="flex items-center gap-2">
+              <Ticket className="h-4 w-4" />
+              <span className="hidden sm:inline">Tiket Saya</span>
+            </TabsTrigger>
+            <TabsTrigger value="password" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">Password</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -181,6 +211,10 @@ export default function ProfilePage() {
               onPhoneChange={setPhone}
               onSubmit={handleUpdateProfile}
             />
+          </TabsContent>
+
+          <TabsContent value="bookings">
+            <BookingsSection bookings={bookings} isLoading={isLoadingBookings} />
           </TabsContent>
 
           <TabsContent value="password">

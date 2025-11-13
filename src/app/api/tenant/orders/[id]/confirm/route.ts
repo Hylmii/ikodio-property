@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth.config';
 import { prisma } from '@/lib/prisma';
-import { sendBookingConfirmationEmail } from '@/lib/email/templates';
+import { sendBookingTicketEmail } from '@/lib/email/templates';
+import { formatPrice } from '@/lib/utils/formatPrice';
+import { formatDate } from '@/lib/utils/formatDate';
 
 export async function PUT(
   req: NextRequest,
@@ -70,24 +72,23 @@ export async function PUT(
       },
     });
 
-    // Send confirmation email
-    if (!updatedBooking.confirmationEmailSent) {
-      await sendBookingConfirmationEmail(
+    // Send beautiful e-ticket email
+    try {
+      await sendBookingTicketEmail(
         updatedBooking.user.email,
         updatedBooking.user.name || 'User',
         updatedBooking.bookingNumber,
         updatedBooking.room.property.name,
         updatedBooking.room.name,
-        updatedBooking.checkInDate.toISOString(),
-        updatedBooking.checkOutDate.toISOString(),
-        updatedBooking.numberOfGuests.toString(),
-        Number(updatedBooking.totalPrice).toString()
+        formatDate(updatedBooking.checkInDate),
+        formatDate(updatedBooking.checkOutDate),
+        formatPrice(Number(updatedBooking.totalPrice)),
+        updatedBooking.numberOfGuests,
+        updatedBooking.room.property.address
       );
-
-      await prisma.booking.update({
-        where: { id },
-        data: { confirmationEmailSent: true },
-      });
+    } catch (emailError) {
+      console.error('Failed to send booking ticket email:', emailError);
+      // Don't fail confirmation if email fails
     }
 
     return NextResponse.json({
