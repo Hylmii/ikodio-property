@@ -153,10 +153,28 @@ function CalendarGrid({
   bookingDates, 
   onDateSelect 
 }: any) {
+  // Format price untuk kalender - maksimal 4 digit dengan satuan k
+  const formatCalendarPrice = (price: number) => {
+    if (price >= 1000) {
+      const inThousands = price / 1000;
+      // Jika lebih dari 1000k, tampilkan tanpa desimal
+      if (inThousands >= 1000) {
+        return `${Math.round(inThousands)}k`;
+      }
+      // Jika ada desimal, tampilkan 1 digit desimal
+      if (inThousands % 1 !== 0) {
+        return `${inThousands.toFixed(1)}k`;
+      }
+      // Jika bulat, tampilkan tanpa desimal
+      return `${Math.round(inThousands)}k`;
+    }
+    return price.toString();
+  };
+
   return (
-    <div className="grid grid-cols-7 gap-2">
+    <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-        <div key={day} className="text-center font-bold text-sm text-slate-700 py-2">
+        <div key={day} className="text-center font-bold text-xs sm:text-sm text-slate-700 py-2">
           {day}
         </div>
       ))}
@@ -195,21 +213,26 @@ function CalendarGrid({
             key={dateStr}
             onClick={() => !isPast && priceData?.available && onDateSelect(date)}
             disabled={isPast || !priceData?.available}
-            className={`aspect-square border rounded-lg p-1 flex flex-col items-center justify-center transition-all relative ${bgColor} ${
+            className={`aspect-square border rounded-lg p-1 sm:p-1.5 flex flex-col items-center justify-center transition-all relative overflow-hidden ${bgColor} ${
               !isPast && priceData?.available 
-                ? 'hover:shadow-lg hover:scale-105 cursor-pointer' 
-                : 'cursor-not-allowed opacity-60'
+                ? 'hover:shadow-md hover:scale-105 cursor-pointer' 
+                : 'cursor-not-allowed opacity-50'
             }`}
+            title={priceData?.available && price > 0 ? formatPrice(price) : undefined}
           >
             {isPeakSeason && priceData?.available && (
               <div className="absolute top-0.5 right-0.5">
-                <Star className="h-3 w-3 fill-orange-500 text-orange-500" />
+                <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-orange-500 text-orange-500" />
               </div>
             )}
-            <div className="text-sm font-bold text-slate-900">{date.getDate()}</div>
+            <div className="text-xs sm:text-sm font-bold text-slate-900 leading-none">
+              {date.getDate()}
+            </div>
             {priceData?.available && price > 0 && (
-              <div className={`text-xs font-medium mt-0.5 ${isPeakSeason ? 'text-orange-700' : 'text-slate-700'}`}>
-                {formatPrice(price)}
+              <div className={`text-[10px] sm:text-xs font-semibold mt-0.5 leading-none ${
+                isPeakSeason ? 'text-orange-700' : 'text-slate-700'
+              }`}>
+                {formatCalendarPrice(price)}
               </div>
             )}
           </button>
