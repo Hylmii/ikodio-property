@@ -77,18 +77,27 @@ export default function RegisterTenantPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
-        <CardHeader className="space-y-1 pb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 dark:from-slate-900 dark:via-emerald-900 dark:to-teal-900 px-4 py-12 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-teal-400/20 to-cyan-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-emerald-400/20 to-green-400/20 rounded-full blur-3xl"></div>
+      </div>
+      
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-xl dark:bg-slate-800/90 relative z-10">
+        <CardHeader className="space-y-1 pb-6 text-center">
           <div className="flex items-center justify-center mb-6">
-            <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
-              <Building2 className="h-12 w-12 text-white" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full blur-lg opacity-75 animate-pulse"></div>
+              <div className="relative p-4 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-full shadow-lg">
+                <Building2 className="h-14 w-14 text-white" />
+              </div>
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-            Daftar sebagai Tenant
+          <CardTitle className="text-4xl font-extrabold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+            Daftar Tenant
           </CardTitle>
-          <CardDescription className="text-center text-base">
+          <CardDescription className="text-base text-slate-600 dark:text-slate-300">
             Mulai kelola dan sewakan properti Anda
           </CardDescription>
         </CardHeader>

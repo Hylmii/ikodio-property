@@ -78,19 +78,28 @@ export default function RegisterUserPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
-        <CardHeader className="space-y-1 pb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-slate-900 dark:via-indigo-900 dark:to-purple-900 px-4 py-12 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
+      </div>
+      
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-xl dark:bg-slate-800/90 relative z-10">
+        <CardHeader className="space-y-1 pb-6 text-center">
           <div className="flex items-center justify-center mb-6">
-            <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-              <Building2 className="h-12 w-12 text-white" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-75 animate-pulse"></div>
+              <div className="relative p-4 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-full shadow-lg">
+                <Building2 className="h-14 w-14 text-white" />
+              </div>
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Daftar sebagai User
+          <CardTitle className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            Buat Akun Baru
           </CardTitle>
-          <CardDescription className="text-center text-base">
-            Buat akun untuk mulai menyewa properti
+          <CardDescription className="text-base text-slate-600 dark:text-slate-300">
+            Bergabung untuk mulai menyewa properti
           </CardDescription>
         </CardHeader>
         <CardContent>
