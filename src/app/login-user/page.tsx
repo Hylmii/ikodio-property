@@ -86,14 +86,18 @@ export default function LoginUserPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Building2 className="h-12 w-12 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-12">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
+        <CardHeader className="space-y-1 pb-6">
+          <div className="flex items-center justify-center mb-6">
+            <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+              <Building2 className="h-12 w-12 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Login sebagai User</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Login sebagai User
+          </CardTitle>
+          <CardDescription className="text-center text-base">
             Masukkan email dan password untuk melanjutkan
           </CardDescription>
         </CardHeader>

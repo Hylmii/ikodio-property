@@ -77,14 +77,18 @@ export default function RegisterTenantPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Building2 className="h-12 w-12 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-12">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80">
+        <CardHeader className="space-y-1 pb-6">
+          <div className="flex items-center justify-center mb-6">
+            <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
+              <Building2 className="h-12 w-12 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Daftar sebagai Tenant</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            Daftar sebagai Tenant
+          </CardTitle>
+          <CardDescription className="text-center text-base">
             Mulai kelola dan sewakan properti Anda
           </CardDescription>
         </CardHeader>
