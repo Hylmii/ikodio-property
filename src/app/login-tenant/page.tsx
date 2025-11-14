@@ -100,14 +100,14 @@ export default function LoginTenantPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white font-medium">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/70" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="nama@example.com"
-                  className="pl-10"
+                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -117,14 +117,14 @@ export default function LoginTenantPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white font-medium">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/70" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Masukkan password"
-                  className="pl-10"
+                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
@@ -133,28 +133,32 @@ export default function LoginTenantPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-white hover:bg-white/90 text-emerald-600 font-bold shadow-lg hover:shadow-xl transition-all duration-200 border-0" 
+              disabled={isLoading}
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? 'Loading...' : 'Login'}
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm">
-            <p className="text-muted-foreground">
+          <div className="mt-6 text-center text-sm space-y-2">
+            <p className="text-white/90">
               Belum punya akun?{' '}
-              <Link href="/register-tenant" className="text-primary hover:underline font-medium">
+              <Link href="/register-tenant" className="text-white hover:underline font-bold">
                 Daftar sekarang
               </Link>
             </p>
             <p className="mt-2 text-muted-foreground">
               Email belum terverifikasi?{' '}
               <Link href="/resend-verification" className="text-primary hover:underline font-medium">
-                Kirim ulang link verifikasi
+                Daftar sekarang
               </Link>
             </p>
-            <p className="mt-2 text-muted-foreground">
+            <p className="text-white/90">
               Login sebagai user?{' '}
-              <Link href="/login-user" className="text-primary hover:underline font-medium">
+              <Link href="/login-user" className="text-white hover:underline font-bold">
                 Klik di sini
               </Link>
             </p>
