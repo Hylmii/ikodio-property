@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Mail, Lock, Loader2, Eye, EyeOff, Star } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, Star } from 'lucide-react';
 
 export default function LoginTenantPage() {
   const router = useRouter();
@@ -78,10 +78,7 @@ export default function LoginTenantPage() {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <Building2 className="h-10 w-10" />
-            <span className="text-2xl font-bold">Ikodio Property</span>
-          </div>
+          <h1 className="text-5xl font-black tracking-tight mb-8">IKODIO</h1>
           
           {/* Heading */}
           <h2 className="text-4xl font-bold mb-4">Manage Your Properties</h2>
@@ -115,9 +112,10 @@ export default function LoginTenantPage() {
       {/* Right Side - Form Section */}
       <div className="w-full lg:w-1/2 bg-gradient-to-br from-slate-50 to-emerald-50 flex items-center justify-center p-6 lg:p-12">
         {/* Mobile Logo */}
-        <div className="absolute top-6 left-6 flex items-center gap-2 lg:hidden">
-          <Building2 className="h-8 w-8 text-emerald-600" />
-          <span className="text-xl font-bold text-slate-900">Ikodio Property</span>
+        <div className="absolute top-6 left-6 lg:hidden">
+          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-cyan-500 to-teal-400 bg-clip-text text-transparent">
+            IKODIO
+          </h1>
         </div>
 
         {/* Form Card */}
@@ -125,9 +123,6 @@ export default function LoginTenantPage() {
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 lg:p-12">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-100 mb-4">
-                <Building2 className="h-8 w-8 text-emerald-600" />
-              </div>
               <h2 className="text-3xl font-bold text-slate-900 mb-2">Tenant Portal</h2>
               <p className="text-slate-600">Sign in to manage your properties</p>
             </div>

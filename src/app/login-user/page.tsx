@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Mail, Lock, Loader2, Eye, EyeOff, User } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, User } from 'lucide-react';
 import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons';
 
 export default function LoginUserPage() {
@@ -98,10 +98,7 @@ export default function LoginUserPage() {
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           {/* Brand */}
           <div className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <Building2 className="w-10 h-10" />
-              <h1 className="text-3xl font-bold">Ikodio Property</h1>
-            </div>
+            <h1 className="text-5xl font-black tracking-tight mb-4">IKODIO</h1>
             <div className="w-20 h-1 bg-cyan-400 rounded-full"></div>
           </div>
 
@@ -136,10 +133,9 @@ export default function LoginUserPage() {
         <div className="w-full max-w-md">
           {/* Logo for Mobile */}
           <div className="lg:hidden text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Building2 className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-slate-900">Ikodio</h1>
-            </div>
+            <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent mb-2">
+              IKODIO
+            </h1>
           </div>
 
           {/* Form Card */}
