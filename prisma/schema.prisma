@@ -174,6 +174,7 @@ model Booking {
   checkOutDate    DateTime
   duration        Int           // jumlah hari
   numberOfGuests  Int
+  roomCount       Int           @default(1) // jumlah kamar yang di-booking
   
   totalPrice      Decimal       @db.Decimal(10, 2)
   

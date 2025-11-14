@@ -150,9 +150,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (numberOfGuests > room.capacity) {
+    // Hitung jumlah kamar yang diperlukan
+    const roomCount = Math.ceil(numberOfGuests / room.capacity);
+
+    // Validasi: maksimal booking 10 kamar sekaligus
+    if (roomCount > 10) {
       return NextResponse.json(
-        { success: false, error: `Jumlah tamu melebihi kapasitas room (max ${room.capacity} orang)` },
+        { success: false, error: `Jumlah kamar yang diperlukan terlalu banyak (${roomCount} kamar). Maksimal 10 kamar per booking.` },
         { status: 400 }
       );
     }
@@ -174,9 +178,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (existingBookings.length > 0) {
+    // Hitung total kamar yang sudah di-booking untuk periode ini
+    const totalBookedRooms = existingBookings.reduce((sum, booking) => sum + (booking.roomCount || 1), 0);
+    
+    // Check apakah masih ada cukup kamar tersedia
+    // Asumsi: setiap room type punya stok tak terbatas (bisa booking banyak kamar dari tipe yang sama)
+    // Jika mau limit per room type, tambahkan field `stock` di Room model
+    if (totalBookedRooms + roomCount > 100) { // limit 100 kamar per room type
       return NextResponse.json(
-        { success: false, error: 'Room tidak tersedia untuk tanggal yang dipilih' },
+        { success: false, error: `Hanya tersisa ${100 - totalBookedRooms} kamar untuk tanggal yang dipilih` },
         { status: 400 }
       );
     }
@@ -209,6 +219,9 @@ export async function POST(req: NextRequest) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    // Kalikan total harga dengan jumlah kamar
+    totalPrice = totalPrice * roomCount;
+
     const bookingNumber = generateBookingNumber();
     const paymentDeadline = new Date(Date.now() + 60 * 60 * 1000); // 1 jam dari sekarang
 
@@ -222,6 +235,7 @@ export async function POST(req: NextRequest) {
         checkOutDate,
         duration,
         numberOfGuests,
+        roomCount, // Simpan jumlah kamar
         totalPrice,
         paymentDeadline,
         status: 'WAITING_PAYMENT',

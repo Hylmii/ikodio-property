@@ -12,6 +12,7 @@ interface Room {
   id: string;
   name: string;
   basePrice: number;
+  capacity: number;
 }
 
 interface PriceBreakdown {
@@ -21,6 +22,7 @@ interface PriceBreakdown {
   peakSeasonAdjustment: number;
   peakSeasonPercentage: number;
   total: number;
+  roomCount: number;
 }
 
 interface BookingDialogProps {
@@ -58,6 +60,9 @@ export function BookingDialog({
 
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  
+  // Calculate required room count based on capacity
+  const roomCount = Math.ceil(guestCount / room.capacity);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -80,15 +85,34 @@ export function BookingDialog({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">{room.name}</h3>
-                  <p className="text-sm text-slate-600">Base price per night</p>
+                  <p className="text-sm text-slate-600">Capacity: {room.capacity} guests per room</p>
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-slate-900">{formatPrice(room.basePrice)}</div>
-                  <p className="text-xs text-slate-500">per night</p>
+                  <p className="text-xs text-slate-500">per room/night</p>
                 </div>
               </div>
             </CardContent>
           </Card>
+          
+          {/* Room Count Info */}
+          {roomCount > 1 && (
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Users className="h-6 w-6 text-blue-600" />
+                  <div>
+                    <p className="font-bold text-blue-900">
+                      {roomCount} rooms required for {guestCount} guests
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      Each room can accommodate up to {room.capacity} guests
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Booking Form */}
           <div className="space-y-5">
@@ -143,6 +167,11 @@ export function BookingDialog({
                 onChange={(e) => onGuestCountChange(parseInt(e.target.value) || 1)}
                 className="h-12 text-base border-2 border-slate-300 focus:border-slate-900 bg-white"
               />
+              {roomCount > 1 && (
+                <p className="text-sm text-blue-600 font-medium">
+                  ℹ️ {roomCount} rooms needed (capacity: {room.capacity} guests/room)
+                </p>
+              )}
             </div>
 
             <Button
@@ -184,9 +213,19 @@ export function BookingDialog({
                 </h3>
                 
                 <div className="space-y-3">
+                  {priceBreakdown.roomCount > 1 && (
+                    <div className="flex justify-between items-center text-blue-700 py-2 bg-blue-50 px-3 rounded-lg border border-blue-200">
+                      <span className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Number of Rooms
+                      </span>
+                      <span className="font-bold text-lg">{priceBreakdown.roomCount} rooms</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center text-slate-700 py-2">
                     <span className="text-base">
                       {formatPrice(priceBreakdown.basePrice)} × {priceBreakdown.nights} {priceBreakdown.nights > 1 ? 'nights' : 'night'}
+                      {priceBreakdown.roomCount > 1 && ` × ${priceBreakdown.roomCount} rooms`}
                     </span>
                     <span className="font-semibold text-lg">{formatPrice(priceBreakdown.subtotal)}</span>
                   </div>

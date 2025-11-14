@@ -195,6 +195,7 @@ export default function PropertyDetailPage({
           roomId: selectedRoom.id,
           checkIn: bookingDates.checkIn,
           checkOut: bookingDates.checkOut,
+          numberOfGuests: guestCount,
         }),
       });
       const data = await res.json();

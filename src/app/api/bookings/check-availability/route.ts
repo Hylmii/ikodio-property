@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { roomId, checkIn, checkOut } = body;
+    const { roomId, checkIn, checkOut, numberOfGuests } = body;
 
     if (!roomId || !checkIn || !checkOut) {
       return NextResponse.json(
@@ -67,13 +67,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const available = overlappingBookings.length === 0;
+    // Calculate required room count based on capacity
+    const guestCount = numberOfGuests || 1;
+    const roomCount = Math.ceil(guestCount / room.capacity);
+
+    // Hitung total kamar yang sudah di-booking untuk periode ini
+    const totalBookedRooms = overlappingBookings.reduce((sum, booking) => sum + (booking.roomCount || 1), 0);
+    const maxRoomsPerType = 100; // Limit 100 kamar per room type
+    const availableRooms = maxRoomsPerType - totalBookedRooms;
+
+    // Check if enough rooms are available
+    const available = availableRooms >= roomCount;
 
     if (!available) {
       return NextResponse.json({
         success: true,
         available: false,
-        message: 'Room not available for selected dates',
+        message: `Not enough rooms available for ${guestCount} guests. Need ${roomCount} rooms but only ${availableRooms} available.`,
       });
     }
 
@@ -83,7 +93,7 @@ export async function POST(req: NextRequest) {
     );
 
     const basePrice = Number(room.basePrice);
-    const subtotal = basePrice * nights;
+    const subtotal = basePrice * nights * roomCount; // Multiply by room count
 
     // Check for peak season rates
     let peakSeasonAdjustment = 0;
@@ -113,6 +123,7 @@ export async function POST(req: NextRequest) {
         peakSeasonAdjustment,
         peakSeasonPercentage,
         total,
+        roomCount,
       },
     });
   } catch (error) {
