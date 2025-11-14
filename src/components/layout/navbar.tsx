@@ -24,7 +24,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center group">
-              <span className="text-2xl font-bold text-black tracking-tight group-hover:scale-105 transition-transform">Ikodio</span>
+              <span className="text-2xl font-black text-black tracking-tight group-hover:scale-105 transition-transform">IKODIO</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
