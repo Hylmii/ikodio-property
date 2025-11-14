@@ -79,18 +79,18 @@ export default function RegisterUserPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-12">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-700"></div>
+      {/* Clean gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"></div>
       
-      {/* Animated mesh gradient overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-rose-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+      {/* Subtle animated overlay */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-slate-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Glass card */}
-      <Card className="w-full max-w-md border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl relative z-10">
+      {/* Modern card */}
+      <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-3xl shadow-2xl relative z-10">
         <CardHeader className="space-y-1 pb-6 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="relative">

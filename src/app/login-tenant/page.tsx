@@ -69,18 +69,18 @@ export default function LoginTenantPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-12">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700"></div>
+      {/* Clean gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-800"></div>
       
-      {/* Animated mesh gradient overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+      {/* Subtle animated overlay */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-slate-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Glass card */}
-      <Card className="w-full max-w-md border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl relative z-10">
+      {/* Modern card */}
+      <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-3xl shadow-2xl relative z-10">
         <CardHeader className="space-y-1 pb-6 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
@@ -90,24 +90,24 @@ export default function LoginTenantPage() {
               </div>
             </div>
           </div>
-          <CardTitle className="text-4xl font-extrabold text-white mb-2 drop-shadow-lg">
-            Portal Tenant
+          <CardTitle className="text-3xl font-bold text-white mb-2">
+            Tenant Portal
           </CardTitle>
-          <CardDescription className="text-base text-white/90 font-medium">
-            Login untuk mengelola properti Anda
+          <CardDescription className="text-base text-slate-300">
+            Sign in to manage your properties
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white font-medium">Email</Label>
+              <Label htmlFor="email" className="text-slate-200 font-medium">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/70" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="nama@example.com"
-                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
+                  className="pl-10 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-cyan-500"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -117,14 +117,14 @@ export default function LoginTenantPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white font-medium">Password</Label>
+              <Label htmlFor="password" className="text-slate-200 font-medium">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/70" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Masukkan password"
-                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
+                  className="pl-10 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-cyan-500"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
@@ -135,7 +135,7 @@ export default function LoginTenantPage() {
 
             <Button 
               type="submit" 
-              className="w-full bg-white hover:bg-white/90 text-emerald-600 font-bold shadow-lg hover:shadow-xl transition-all duration-200 border-0" 
+              className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -144,21 +144,21 @@ export default function LoginTenantPage() {
           </form>
 
           <div className="mt-6 text-center text-sm space-y-2">
-            <p className="text-white/90">
+            <p className="text-slate-300">
               Belum punya akun?{' '}
-              <Link href="/register-tenant" className="text-white hover:underline font-bold">
+              <Link href="/register-tenant" className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold">
                 Daftar sekarang
               </Link>
             </p>
-            <p className="mt-2 text-muted-foreground">
+            <p className="text-slate-300">
               Email belum terverifikasi?{' '}
-              <Link href="/resend-verification" className="text-primary hover:underline font-medium">
-                Daftar sekarang
+              <Link href="/resend-verification" className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold">
+                Kirim ulang link verifikasi
               </Link>
             </p>
-            <p className="text-white/90">
+            <p className="text-slate-300">
               Login sebagai user?{' '}
-              <Link href="/login-user" className="text-white hover:underline font-bold">
+              <Link href="/login-user" className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold">
                 Klik di sini
               </Link>
             </p>
