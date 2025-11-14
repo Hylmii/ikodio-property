@@ -86,41 +86,46 @@ export default function LoginUserPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-slate-900 dark:via-indigo-900 dark:to-purple-900 px-4 py-12 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-12">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700"></div>
       
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-xl dark:bg-slate-800/90 relative z-10">
+      {/* Animated mesh gradient overlay */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Glass card */}
+      <Card className="w-full max-w-md border border-white/20 bg-white/10 backdrop-blur-2xl shadow-2xl relative z-10">
         <CardHeader className="space-y-1 pb-6 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-lg opacity-75 animate-pulse"></div>
-              <div className="relative p-4 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-full shadow-lg">
+              <div className="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
+              <div className="relative p-4 bg-white/20 backdrop-blur-sm rounded-full shadow-lg border border-white/30">
                 <Building2 className="h-14 w-14 text-white" />
               </div>
             </div>
           </div>
-          <CardTitle className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <CardTitle className="text-4xl font-extrabold text-white mb-2 drop-shadow-lg">
             Selamat Datang
           </CardTitle>
-          <CardDescription className="text-base text-slate-600 dark:text-slate-300">
+          <CardDescription className="text-base text-white/90 font-medium">
             Login untuk melanjutkan ke akun Anda
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white font-medium">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/70" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="nama@example.com"
-                  className="pl-10"
+                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -131,18 +136,18 @@ export default function LoginUserPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/reset-password" className="text-xs text-blue-600 hover:underline">
+                <Label htmlFor="password" className="text-white font-medium">Password</Label>
+                <Link href="/reset-password" className="text-xs text-white/90 hover:text-white hover:underline font-medium">
                   Lupa password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/70" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Masukkan password"
-                  className="pl-10"
+                  className="pl-10 bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
@@ -151,7 +156,11 @@ export default function LoginUserPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-white hover:bg-white/90 text-blue-600 font-bold shadow-lg hover:shadow-xl transition-all duration-200 border-0" 
+              disabled={isLoading}
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? 'Loading...' : 'Login'}
             </Button>
@@ -159,10 +168,10 @@ export default function LoginUserPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-white/30" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-slate-800 px-2 text-muted-foreground">
+              <span className="bg-white/10 backdrop-blur-sm px-2 text-white/80 font-medium">
                 Atau lanjutkan dengan
               </span>
             </div>
@@ -170,22 +179,22 @@ export default function LoginUserPage() {
 
           <SocialLoginButtons callbackUrl="/profile" />
 
-          <div className="mt-6 text-center text-sm">
-            <p className="text-muted-foreground">
+          <div className="mt-6 text-center text-sm space-y-2">
+            <p className="text-white/90">
               Belum punya akun?{' '}
-              <Link href="/register-user" className="text-primary hover:underline font-medium">
+              <Link href="/register-user" className="text-white hover:underline font-bold">
                 Daftar sekarang
               </Link>
             </p>
-            <p className="mt-2 text-muted-foreground">
+            <p className="text-white/90">
               Email belum terverifikasi?{' '}
-              <Link href="/resend-verification" className="text-primary hover:underline font-medium">
+              <Link href="/resend-verification" className="text-white hover:underline font-bold">
                 Kirim ulang link verifikasi
               </Link>
             </p>
-            <p className="mt-2 text-muted-foreground">
+            <p className="text-white/90">
               Login sebagai tenant?{' '}
-              <Link href="/login-tenant" className="text-primary hover:underline font-medium">
+              <Link href="/login-tenant" className="text-white hover:underline font-bold">
                 Klik di sini
               </Link>
             </p>

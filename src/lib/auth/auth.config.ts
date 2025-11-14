@@ -207,6 +207,7 @@ export const authConfig: NextAuthConfig = {
     strategy: 'jwt',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // Fix UntrustedHost error for production
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
