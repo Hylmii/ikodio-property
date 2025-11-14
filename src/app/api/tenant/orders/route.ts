@@ -22,15 +22,20 @@ export async function GET(req: NextRequest) {
     const propertyId = searchParams.get('propertyId');
     const search = searchParams.get('search') || '';
 
+    console.log('Query params:', { status, propertyId, search });
+
     const where: any = {
       tenantId: session.user.id,
     };
     
-    console.log('Where clause:', JSON.stringify(where, null, 2));
+    console.log('Where clause (before status):', JSON.stringify(where, null, 2));
 
     if (status) {
       where.status = status;
+      console.log('Status filter applied:', status);
     }
+
+    console.log('Final where clause:', JSON.stringify(where, null, 2));
 
     if (propertyId) {
       where.room = {
@@ -63,6 +68,7 @@ export async function GET(req: NextRequest) {
                   id: true,
                   name: true,
                   city: true,
+                  images: true,
                 },
               },
             },
@@ -79,10 +85,27 @@ export async function GET(req: NextRequest) {
 
     console.log('Found orders:', orders.length);
     console.log('Total orders:', total);
+    if (orders.length > 0) {
+      console.log('First order sample:', {
+        id: orders[0].id,
+        bookingNumber: orders[0].bookingNumber,
+        status: orders[0].status,
+        tenantId: orders[0].tenantId,
+        hasPaymentProof: !!orders[0].paymentProof,
+        totalPrice: orders[0].totalPrice,
+        totalPriceType: typeof orders[0].totalPrice
+      });
+    }
+
+    // Convert Decimal to Number to avoid serialization issues
+    const ordersWithNumbers = orders.map(order => ({
+      ...order,
+      totalPrice: Number(order.totalPrice),
+    }));
 
     return NextResponse.json({
       success: true,
-      data: orders,
+      data: ordersWithNumbers,
       pagination: {
         page,
         limit,

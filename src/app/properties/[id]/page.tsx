@@ -172,7 +172,7 @@ export default function PropertyDetailPage({
         title: 'Login Required', 
         description: 'Please login to book' 
       });
-      router.push('/login');
+      router.push('/login-user');
       return;
     }
     setSelectedRoom(room);

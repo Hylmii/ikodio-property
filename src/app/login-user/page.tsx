@@ -28,6 +28,7 @@ export default function LoginUserPage() {
     console.log('🔐 Login attempt with:', formData.email);
 
     try {
+      console.log('🔐 Attempting login with:', formData.email);
       const result = await signIn('user-credentials', {
         email: formData.email,
         password: formData.password,
@@ -35,18 +36,37 @@ export default function LoginUserPage() {
       });
 
       console.log('📊 SignIn result:', result);
+      console.log('📊 Result type:', typeof result);
+      console.log('📊 Has error?', result?.error ? 'YES' : 'NO');
 
       if (result?.error) {
         console.error('❌ Login error:', result.error);
+        console.error('❌ Error type:', typeof result.error);
         
         // Check if error is about unverified email
         const isUnverifiedError = result.error.includes('belum diverifikasi');
         
+        // Map error messages
+        let errorMessage = 'Email atau password salah';
+        
+        if (result.error === 'CredentialsSignin') {
+          errorMessage = 'Email atau password salah';
+        } else if (result.error === 'Configuration') {
+          errorMessage = 'Email atau password salah';
+        } else if (result.error.includes('belum diverifikasi')) {
+          errorMessage = result.error;
+        } else if (result.error.includes('salah')) {
+          errorMessage = result.error;
+        } else if (result.error.includes('social login')) {
+          errorMessage = result.error;
+        } else if (result.error) {
+          errorMessage = result.error;
+        }
+        
+        console.log('🔔 Calling toast with:', { title: 'Login Gagal', description: errorMessage });
         toast({
           title: 'Login Gagal',
-          description: result.error === 'CredentialsSignin' 
-            ? 'Email atau password salah' 
-            : result.error,
+          description: errorMessage,
           variant: 'destructive',
           action: isUnverifiedError ? (
             <button

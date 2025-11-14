@@ -32,10 +32,25 @@ export function useBooking() {
 
   const handleBookClick = (room: Room) => {
     if (!session) {
-      toast({ title: 'Login Required', description: 'Please login to book' });
-      router.push('/login');
+      toast({ 
+        title: 'Login Diperlukan', 
+        description: 'Silakan login sebagai pengguna untuk melakukan pemesanan',
+        variant: 'destructive'
+      });
+      router.push('/login-user');
       return;
     }
+    
+    // Check if user has correct role
+    if (session.user.role !== 'USER') {
+      toast({ 
+        title: 'Akses Ditolak', 
+        description: 'Fitur pemesanan hanya tersedia untuk pengguna (user). Tenant dan admin tidak dapat melakukan pemesanan.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     setSelectedRoom(room);
     setIsBookingDialogOpen(true);
     setAvailabilityMessage(null);

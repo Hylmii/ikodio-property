@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth/auth.config';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email/templates';
+import { getToken } from 'next-auth/jwt';
 
 // GET - Fetch all users (admin only)
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    // Get JWT token from request
+    const token = await getToken({ 
+      req, 
+      secret: process.env.NEXTAUTH_SECRET 
+    });
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    console.log('🔍 Admin API - Token:', token);
+    console.log('🔍 Admin API - Role:', token?.role);
+
+    if (!token || token.role !== 'ADMIN') {
+      console.log('❌ Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -45,9 +53,12 @@ export async function GET(req: NextRequest) {
 // PUT - Update user (verify/unverify/reset password)
 export async function PUT(req: NextRequest) {
   try {
-    const session = await auth();
+    const token = await getToken({ 
+      req, 
+      secret: process.env.NEXTAUTH_SECRET 
+    });
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!token || token.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -179,9 +190,12 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete user
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
+    const token = await getToken({ 
+      req, 
+      secret: process.env.NEXTAUTH_SECRET 
+    });
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!token || token.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }

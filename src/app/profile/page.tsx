@@ -45,7 +45,7 @@ export default function ProfilePage() {
         setName(data.data.name || '');
         setEmail(data.data.email || '');
         setPhone(data.data.phone || '');
-        setAvatar(data.data.profilePicture || '');
+        setAvatar(data.data.profileImage || '');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -149,7 +149,7 @@ export default function ProfilePage() {
     setIsLoadingPassword(true);
 
     try {
-      const response = await fetch('/api/user/profile/password', {
+      const response = await fetch('/api/user/password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),

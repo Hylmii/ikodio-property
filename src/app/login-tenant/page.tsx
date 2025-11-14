@@ -35,9 +35,27 @@ export default function LoginTenantPage() {
         // Check if error is about unverified email
         const isUnverifiedError = result.error.includes('belum diverifikasi');
         
+        // Map error messages
+        let errorMessage = 'Email atau password salah';
+        
+        if (result.error === 'CredentialsSignin') {
+          errorMessage = 'Email atau password salah';
+        } else if (result.error === 'Configuration') {
+          errorMessage = 'Email atau password salah';
+        } else if (result.error.includes('belum diverifikasi')) {
+          errorMessage = result.error;
+        } else if (result.error.includes('salah')) {
+          errorMessage = result.error;
+        } else if (result.error.includes('social login')) {
+          errorMessage = result.error;
+        } else if (result.error) {
+          errorMessage = result.error;
+        }
+        
+        console.log('🔔 Calling toast with:', { title: 'Login Gagal', description: errorMessage });
         toast({
           title: 'Login Gagal',
-          description: result.error,
+          description: errorMessage,
           variant: 'destructive',
           action: isUnverifiedError ? (
             <button

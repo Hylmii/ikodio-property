@@ -61,7 +61,7 @@ export function OrderCard({ order, onConfirm, onReject }: OrderCardProps) {
           <div className="flex gap-4">
             <div className="relative w-24 h-24 rounded-lg overflow-hidden">
               <Image
-                src={order.room.property.images[0] || '/placeholder.jpg'}
+                src={order.room.property.images?.[0] || '/placeholder.jpg'}
                 alt={order.room.property.name}
                 fill
                 className="object-cover"

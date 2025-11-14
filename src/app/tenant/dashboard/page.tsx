@@ -70,7 +70,7 @@ export default function TenantDashboardPage() {
 
         const totalRevenue = orders
           .filter((o: any) => o.status === 'CONFIRMED' || o.status === 'COMPLETED')
-          .reduce((sum: number, o: any) => sum + o.totalPrice, 0);
+          .reduce((sum: number, o: any) => sum + Number(o.totalPrice), 0);
 
         const ratingsCount = properties.reduce(
           (count: number, p: any) => count + (p._count?.reviews || 0),

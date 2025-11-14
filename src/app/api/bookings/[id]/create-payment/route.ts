@@ -11,7 +11,7 @@ export async function POST(
     const session = await auth();
     if (!session || !session.user || session.user.role !== 'USER') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized - Fitur pembayaran hanya untuk pengguna (user)' },
         { status: 401 }
       );
     }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Users, Ticket } from 'lucide-react';
@@ -7,15 +8,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils/formatDate';
 import { formatPrice } from '@/lib/utils/formatPrice';
+import { TicketDialog } from './TicketDialog';
 
 interface Booking {
   id: string;
   bookingNumber: string;
   checkInDate: string;
   checkOutDate: string;
-  guestCount: number;
+  numberOfGuests: number;
   totalPrice: number;
   status: string;
+  review?: {
+    id: string;
+  } | null;
   room: {
     id: string;
     name: string;
@@ -35,7 +40,15 @@ interface BookingsSectionProps {
 }
 
 export function BookingsSection({ bookings, isLoading }: BookingsSectionProps) {
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
   const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED');
+
+  const handleViewTicket = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setIsDialogOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -125,7 +138,7 @@ export function BookingsSection({ bookings, isLoading }: BookingsSectionProps) {
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="text-xs text-muted-foreground">Tamu</div>
-                        <div className="font-medium">{booking.guestCount} orang</div>
+                        <div className="font-medium">{booking.numberOfGuests} orang</div>
                       </div>
                     </div>
                   </div>
@@ -137,17 +150,15 @@ export function BookingsSection({ bookings, isLoading }: BookingsSectionProps) {
                         {booking.bookingNumber}
                       </code>
                     </div>
-                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4">
                       <div className="text-right">
                         <div className="text-xs text-muted-foreground">Total Bayar</div>
                         <div className="text-lg font-bold text-primary">
                           {formatPrice(booking.totalPrice)}
                         </div>
                       </div>
-                      <Button asChild variant="outline">
-                        <Link href={`/properties/${booking.room.property.id}`}>
-                          Lihat Detail
-                        </Link>
+                      <Button variant="outline" onClick={() => handleViewTicket(booking)}>
+                        Lihat Tiket
                       </Button>
                     </div>
                   </div>
@@ -157,6 +168,12 @@ export function BookingsSection({ bookings, isLoading }: BookingsSectionProps) {
           </Card>
         ))}
       </div>
+
+      <TicketDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        booking={selectedBooking}
+      />
     </div>
   );
 }

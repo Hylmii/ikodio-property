@@ -16,7 +16,7 @@ export async function PUT(
     
     if (!session || !session.user || session.user.role !== 'USER') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized - Upload bukti pembayaran hanya untuk pengguna (user)' },
         { status: 401 }
       );
     }

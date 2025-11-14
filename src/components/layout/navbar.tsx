@@ -68,6 +68,12 @@ export function Navbar() {
                         Properti
                       </Button>
                     </Link>
+                    <Link href="/tenant/approval">
+                      <Button variant="ghost" size="sm" className="gap-2 text-gray-700 hover:bg-gray-100">
+                        <CreditCard className="h-4 w-4" />
+                        Approval
+                      </Button>
+                    </Link>
                     <Link href="/tenant/orders">
                       <Button variant="ghost" size="sm" className="gap-2 text-gray-700 hover:bg-gray-100">
                         <CreditCard className="h-4 w-4" />

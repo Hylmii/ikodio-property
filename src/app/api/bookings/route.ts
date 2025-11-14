@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     
     if (!session || !session.user || session.user.role !== 'USER') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized - Fitur ini khusus untuk pengguna (user)' },
         { status: 401 }
       );
     }
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     
     if (!session || !session.user || session.user.role !== 'USER') {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized - Fitur pemesanan hanya untuk pengguna (user)' },
         { status: 401 }
       );
     }

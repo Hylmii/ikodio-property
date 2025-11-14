@@ -39,14 +39,20 @@ export const authConfig: NextAuthConfig = {
         const user = await prisma.user.findUnique({
           where: { 
             email: credentials.email as string,
-            role: UserRole.USER,
           },
         });
 
         console.log('👤 User found:', user ? 'Yes' : 'No');
+        console.log('👤 User role:', user?.role);
 
         if (!user) {
-          console.log('❌ User not found or wrong role');
+          console.log('❌ User not found');
+          throw new Error('Email atau password salah');
+        }
+
+        // Allow USER and ADMIN roles for user login
+        if (user.role !== UserRole.USER && user.role !== UserRole.ADMIN) {
+          console.log('❌ Wrong role for user login:', user.role);
           throw new Error('Email atau password salah');
         }
 

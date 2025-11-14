@@ -12,12 +12,30 @@ interface HeroSectionProps {
 
 export function HeroSection({ heroImages }: HeroSectionProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [cities, setCities] = useState<string[]>([]);
   const [searchData, setSearchData] = useState({
     city: '',
     checkIn: '',
     checkOut: '',
     guests: 1,
   });
+
+  // Fetch available cities
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch('/api/cities');
+        const data = await response.json();
+        if (data.cities) {
+          setCities(data.cities);
+        }
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    };
+
+    fetchCities();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -107,70 +125,88 @@ export function HeroSection({ heroImages }: HeroSectionProps) {
             <div className="flex flex-col md:flex-row gap-3 items-stretch">
               {/* Pilih Kota */}
               <div className="flex-1">
-                <div className="relative bg-slate-100 rounded-xl overflow-hidden h-14 hover:bg-slate-200 transition-colors">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 pointer-events-none z-10" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Kota Tujuan</label>
+                <div className="relative bg-white border-2 border-slate-300 rounded-xl overflow-hidden h-14 hover:border-slate-900 transition-colors shadow-sm">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 pointer-events-none z-10" />
                   <select
                     value={searchData.city}
                     onChange={(e) => setSearchData({ ...searchData, city: e.target.value })}
-                    className="w-full h-full pl-12 pr-10 bg-transparent text-slate-700 font-medium focus:outline-none appearance-none cursor-pointer"
+                    className="w-full h-full pl-12 pr-10 bg-white text-slate-900 font-semibold text-base focus:outline-none appearance-none cursor-pointer"
                     style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23334155'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'right 0.75rem center',
-                      backgroundSize: '1.25em 1.25em',
+                      backgroundSize: '1.5em 1.5em',
+                      backgroundColor: 'white',
                     }}
                   >
-                    <option value="">Pilih Kota</option>
-                    <option value="Jakarta">Jakarta</option>
-                    <option value="Bandung">Bandung</option>
-                    <option value="Bali">Bali</option>
-                    <option value="Surabaya">Surabaya</option>
-                    <option value="Yogyakarta">Yogyakarta</option>
+                    <option value="" style={{ backgroundColor: 'white' }}>Pilih Kota</option>
+                    {cities.length > 0 ? (
+                      cities.map((city) => (
+                        <option key={city} value={city} style={{ backgroundColor: 'white', color: '#0f172a' }}>
+                          {city}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="Jakarta" style={{ backgroundColor: 'white', color: '#0f172a' }}>Jakarta</option>
+                        <option value="Bandung" style={{ backgroundColor: 'white', color: '#0f172a' }}>Bandung</option>
+                        <option value="Bali" style={{ backgroundColor: 'white', color: '#0f172a' }}>Bali</option>
+                        <option value="Surabaya" style={{ backgroundColor: 'white', color: '#0f172a' }}>Surabaya</option>
+                        <option value="Yogyakarta" style={{ backgroundColor: 'white', color: '#0f172a' }}>Yogyakarta</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
               
               {/* Date */}
               <div className="flex-1">
-                <div className="relative bg-slate-100 rounded-xl overflow-hidden h-14 hover:bg-slate-200 transition-colors">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 pointer-events-none z-10" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Tanggal Check-in</label>
+                <div className="relative bg-white border-2 border-slate-300 rounded-xl overflow-hidden h-14 hover:border-slate-900 transition-colors">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 pointer-events-none z-10" />
                   <input
                     type="date"
                     value={searchData.checkIn}
                     onChange={(e) => setSearchData({ ...searchData, checkIn: e.target.value })}
                     placeholder="dd/mm/yyyy"
-                    className="w-full h-full pl-12 pr-4 bg-transparent text-slate-700 font-medium focus:outline-none placeholder:text-slate-500"
+                    className="w-full h-full pl-12 pr-4 bg-transparent text-slate-900 font-semibold text-base focus:outline-none placeholder:text-slate-500"
                   />
                 </div>
               </div>
               
               {/* Durasi */}
               <div className="flex-1">
-                <div className="relative bg-slate-100 rounded-xl overflow-hidden h-14 hover:bg-slate-200 transition-colors">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Durasi</label>
+                <div className="relative bg-white border-2 border-slate-300 rounded-xl overflow-hidden h-14 hover:border-slate-900 transition-colors">
                   <input
-                    type="text"
-                    placeholder="Durasi (malam)"
-                    className="w-full h-full px-4 bg-transparent text-slate-700 font-medium placeholder:text-slate-500 focus:outline-none"
+                    type="number"
+                    min="1"
+                    placeholder="Berapa malam?"
+                    className="w-full h-full px-4 bg-transparent text-slate-900 font-semibold text-base placeholder:text-slate-500 focus:outline-none"
                   />
                 </div>
               </div>
               
               {/* Jumlah Tamu */}
               <div className="flex-1">
-                <div className="relative bg-slate-100 rounded-xl overflow-hidden h-14 hover:bg-slate-200 transition-colors">
-                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 pointer-events-none z-10" />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Jumlah Tamu</label>
+                <div className="relative bg-white border-2 border-slate-300 rounded-xl overflow-hidden h-14 hover:border-slate-900 transition-colors">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 pointer-events-none z-10" />
                   <input
-                    type="text"
-                    placeholder="Jumlah Tamu"
+                    type="number"
+                    min="1"
+                    placeholder="Berapa orang?"
                     value={searchData.guests || ''}
                     onChange={(e) => setSearchData({ ...searchData, guests: parseInt(e.target.value) || 1 })}
-                    className="w-full h-full pl-12 pr-4 bg-transparent text-slate-700 font-medium placeholder:text-slate-500 focus:outline-none"
+                    className="w-full h-full pl-12 pr-4 bg-transparent text-slate-900 font-semibold text-base placeholder:text-slate-500 focus:outline-none"
                   />
                 </div>
               </div>
               
               {/* Button Cari */}
               <div className="md:w-auto w-full">
+                <label className="block text-sm font-semibold text-transparent mb-2 select-none">.</label>
                 <Button 
                   size="lg" 
                   className="w-full md:w-auto h-14 px-8 bg-slate-900 hover:bg-slate-800 text-white font-bold text-base rounded-xl shadow-lg hover:shadow-xl transition-all"

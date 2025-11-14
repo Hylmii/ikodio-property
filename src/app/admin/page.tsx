@@ -43,12 +43,19 @@ export default function AdminPage() {
   useEffect(() => {
     if (status === 'loading') return;
     
+    console.log('🔍 Admin Page - Status:', status);
+    console.log('🔍 Admin Page - Session:', session);
+    console.log('🔍 Admin Page - User:', session?.user);
+    console.log('🔍 Admin Page - Role:', session?.user?.role);
+    
     // Check if user is logged in and is an admin
     if (!session?.user || session.user.role !== 'ADMIN') {
+      console.log('❌ Not admin, redirecting to login');
       router.push('/login-user');
       return;
     }
 
+    console.log('✅ Admin authenticated, fetching users');
     fetchUsers();
   }, [session, status, router]);
 
@@ -67,11 +74,15 @@ export default function AdminPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await fetch('/api/admin/users', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
         setFilteredUsers(data.users);
+      } else {
+        console.error('Failed to fetch users:', await response.text());
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -101,6 +112,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/users', {
         method: action === 'delete' ? 'DELETE' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ userId, action }),
       });
 

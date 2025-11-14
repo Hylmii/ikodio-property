@@ -36,9 +36,36 @@ export default function PropertiesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [city, setCity] = useState('');
+  const [cities, setCities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('createdAt');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Get city from URL on first load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cityParam = params.get('city');
+    if (cityParam) {
+      setCity(cityParam);
+    }
+  }, []);
+
+  // Fetch available cities
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch('/api/cities');
+        const data = await response.json();
+        if (data.cities) {
+          setCities(data.cities);
+        }
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    };
+
+    fetchCities();
+  }, []);
 
   useEffect(() => {
     fetchProperties();
@@ -122,11 +149,21 @@ export default function PropertiesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Cities</SelectItem>
-                <SelectItem value="Jakarta">Jakarta</SelectItem>
-                <SelectItem value="Bandung">Bandung</SelectItem>
-                <SelectItem value="Surabaya">Surabaya</SelectItem>
-                <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
-                <SelectItem value="Bali">Bali</SelectItem>
+                {cities.length > 0 ? (
+                  cities.map((cityName) => (
+                    <SelectItem key={cityName} value={cityName}>
+                      {cityName}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="Jakarta">Jakarta</SelectItem>
+                    <SelectItem value="Bandung">Bandung</SelectItem>
+                    <SelectItem value="Surabaya">Surabaya</SelectItem>
+                    <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
+                    <SelectItem value="Bali">Bali</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

@@ -56,7 +56,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login')
+      router.push('/login-user')
     }
   }, [status, router])
 

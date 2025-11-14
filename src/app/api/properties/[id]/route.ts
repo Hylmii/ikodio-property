@@ -84,6 +84,7 @@ export async function GET(
       data: {
         ...property,
         averageRating: avgRating._avg.rating || 0,
+        totalReviews: property._count.reviews,
       },
     });
   } catch (error) {

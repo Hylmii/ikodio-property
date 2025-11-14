@@ -34,6 +34,10 @@ export async function middleware(request: NextRequest) {
   const tenantRoutes = ['/tenant'];
   const isTenantRoute = tenantRoutes.some(route => pathname.startsWith(route));
 
+  // Admin protected routes - only accessible by authenticated ADMIN
+  const adminRoutes = ['/admin'];
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+
   // API and static routes - always allow
   const isApiRoute = pathname.startsWith('/api');
   const isStaticRoute = pathname.startsWith('/_next') || pathname.startsWith('/uploads') || pathname.includes('.');
@@ -43,8 +47,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user not logged in and trying to access protected route
-  if (!session && (isUserRoute || isTenantRoute)) {
-    const loginUrl = isTenantRoute ? '/login-tenant' : '/login-user';
+  if (!session && (isUserRoute || isTenantRoute || isAdminRoute)) {
+    let loginUrl = '/login-user';
+    if (isTenantRoute) loginUrl = '/login-tenant';
+    if (isAdminRoute) loginUrl = '/login-user'; // Admin login via user login
+    
     const url = new URL(loginUrl, request.url);
     url.searchParams.set('callbackUrl', pathname);
     url.searchParams.set('message', 'Please login to continue');
@@ -58,6 +65,9 @@ export async function middleware(request: NextRequest) {
 
     // Redirect logged-in users away from login/register pages
     if (pathname === '/login-user' || pathname === '/register-user') {
+      if (userRole === 'ADMIN') {
+        return NextResponse.redirect(new URL('/admin', request.url));
+      }
       if (userRole === 'USER') {
         return NextResponse.redirect(new URL('/properties', request.url));
       }
@@ -72,14 +82,21 @@ export async function middleware(request: NextRequest) {
     // USER role trying to access TENANT routes
     if (userRole === 'USER' && isTenantRoute) {
       const url = new URL('/', request.url);
-      url.searchParams.set('error', 'Access denied. This area is for property owners only.');
+      url.searchParams.set('error', 'Akses Ditolak: Area ini khusus untuk pemilik properti (tenant). Akun Anda adalah pengguna (user).');
       return NextResponse.redirect(url);
     }
 
     // TENANT role trying to access USER routes
     if (userRole === 'TENANT' && isUserRoute) {
       const url = new URL('/tenant/dashboard', request.url);
-      url.searchParams.set('error', 'Access denied. Please use tenant dashboard.');
+      url.searchParams.set('error', 'Akses Ditolak: Fitur ini khusus untuk pengguna (user). Akun tenant tidak dapat mengakses fitur pemesanan.');
+      return NextResponse.redirect(url);
+    }
+
+    // Non-ADMIN role trying to access ADMIN routes
+    if (isAdminRoute && userRole !== 'ADMIN') {
+      const url = new URL('/', request.url);
+      url.searchParams.set('error', 'Akses Ditolak: Area ini memerlukan hak akses administrator.');
       return NextResponse.redirect(url);
     }
 
