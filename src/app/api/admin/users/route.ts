@@ -237,13 +237,11 @@ export async function DELETE(req: NextRequest) {
           });
 
           for (const room of rooms) {
-            await tx.roomImage.deleteMany({ where: { roomId: room.id } });
             await tx.booking.deleteMany({ where: { roomId: room.id } });
+            await tx.peakSeasonRate.deleteMany({ where: { roomId: room.id } });
           }
 
           await tx.room.deleteMany({ where: { propertyId: property.id } });
-          await tx.propertyImage.deleteMany({ where: { propertyId: property.id } });
-          await tx.peakSeasonRate.deleteMany({ where: { propertyId: property.id } });
           await tx.review.deleteMany({ where: { propertyId: property.id } });
         }
 
