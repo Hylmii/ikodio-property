@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/lib/auth/auth.config';
+import { auth } from '@/lib/auth/auth.config';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email/templates';
 
 // GET - Fetch all users (admin only)
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authConfig);
+    const session = await auth();
 
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -46,7 +45,7 @@ export async function GET(req: NextRequest) {
 // PUT - Update user (verify/unverify/reset password)
 export async function PUT(req: NextRequest) {
   try {
-    const session = await getServerSession(authConfig);
+    const session = await auth();
 
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -180,7 +179,7 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete user
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await getServerSession(authConfig);
+    const session = await auth();
 
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
