@@ -282,12 +282,12 @@ export function getBookingTicketEmailTemplate(
     <body>
       <div class="container">
         <div class="header">
-          <h1>🎉 Booking Dikonfirmasi!</h1>
+          <h1>Booking Dikonfirmasi!</h1>
           <p>E-Ticket Anda Siap</p>
         </div>
         <div class="content">
           <div class="success-badge">
-            <span class="check-icon">✓</span>
+            <span class="check-icon">V</span>
             <span>Pembayaran Berhasil Diverifikasi</span>
           </div>
           
@@ -306,7 +306,7 @@ export function getBookingTicketEmailTemplate(
             <div class="detail-grid">
               <div class="detail-item detail-full">
                 <div class="detail-label">
-                  <span class="icon">🏨</span>
+                  <span class="icon">Hotel</span>
                   Properti
                 </div>
                 <div class="detail-value">${propertyName}</div>
@@ -314,7 +314,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item detail-full">
                 <div class="detail-label">
-                  <span class="icon">🛏️</span>
+                  <span class="icon">Kamar</span>
                   Tipe Kamar
                 </div>
                 <div class="detail-value">${roomName}</div>
@@ -322,7 +322,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item">
                 <div class="detail-label">
-                  <span class="icon">📅</span>
+                  <span class="icon">Tanggal</span>
                   Check-in
                 </div>
                 <div class="detail-value">${checkIn}</div>
@@ -330,7 +330,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item">
                 <div class="detail-label">
-                  <span class="icon">📅</span>
+                  <span class="icon">Tanggal</span>
                   Check-out
                 </div>
                 <div class="detail-value">${checkOut}</div>
@@ -338,7 +338,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item">
                 <div class="detail-label">
-                  <span class="icon">👥</span>
+                  <span class="icon">Tamu</span>
                   Jumlah Tamu
                 </div>
                 <div class="detail-value">${guestCount} orang</div>
@@ -346,7 +346,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item">
                 <div class="detail-label">
-                  <span class="icon">💰</span>
+                  <span class="icon">Harga</span>
                   Total Pembayaran
                 </div>
                 <div class="detail-value">${totalPrice}</div>
@@ -354,7 +354,7 @@ export function getBookingTicketEmailTemplate(
 
               <div class="detail-item detail-full">
                 <div class="detail-label">
-                  <span class="icon">📍</span>
+                  <span class="icon">Lokasi</span>
                   Alamat Properti
                 </div>
                 <div class="detail-value">${propertyAddress}</div>
@@ -372,7 +372,7 @@ export function getBookingTicketEmailTemplate(
 
           <p style="font-size: 14px; color: #6b7280; margin-top: 24px;">
             Terima kasih telah memesan melalui <strong>${process.env.APP_NAME || 'Ikodio Property'}</strong>. 
-            Selamat berlibur! 🎊
+            Selamat berlibur!
           </p>
         </div>
         <div class="footer">
@@ -412,7 +412,7 @@ export async function sendBookingTicketEmail(
   
   return await sendEmail({
     to,
-    subject: `🎉 Booking Dikonfirmasi - E-Ticket ${bookingNumber}`,
+    subject: `Booking Dikonfirmasi - E-Ticket ${bookingNumber}`,
     html,
   });
 }

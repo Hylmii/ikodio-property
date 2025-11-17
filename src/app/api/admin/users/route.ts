@@ -13,11 +13,11 @@ export async function GET(req: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET 
     });
 
-    console.log('🔍 Admin API - Token:', token);
-    console.log('🔍 Admin API - Role:', token?.role);
+    console.log('[ADMIN] Admin API - Token:', token);
+    console.log('[ADMIN] Admin API - Role:', token?.role);
 
     if (!token || token.role !== 'ADMIN') {
-      console.log('❌ Unauthorized access attempt');
+      console.log('[ADMIN] Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -146,7 +146,7 @@ export async function PUT(req: NextRequest) {
                 </div>
 
                 <div class="warning">
-                  <strong>⚠️ Penting:</strong> Segera ganti password Anda setelah login untuk keamanan akun Anda.
+                  <strong>Penting:</strong> Segera ganti password Anda setelah login untuk keamanan akun Anda.
                 </div>
 
                 <p>Anda dapat login menggunakan password baru ini di:</p>

@@ -1,47 +1,47 @@
 # IkodioProperty - Property Rental Platform
 
-Platform penyewaan properti modern yang dibangun dengan Next.js 15, TypeScript, dan Prisma ORM.
+Modern property rental platform built with Next.js 15, TypeScript, and Prisma ORM.
 
-## 🚀 Fitur Lengkap - 100% Complete
+## Features
 
-### ✅ Untuk Pengguna (User)
-- Autentikasi lengkap (Register, Login, Verify Email, Reset Password)
-- **Social Login (Google, Facebook, Twitter/X)** 🆕
-- Pencarian & filter properti (kota, sorting, pagination)
-- Detail properti dengan booking system
-- **Payment Gateway Integration (Midtrans)** 🆕
-- Upload bukti pembayaran (manual)
-- Review properti setelah check-out
-- Manajemen profile dengan foto
-- Riwayat transaksi dengan pencarian
+### User Features
+- Complete authentication system (Register, Login, Email Verification, Password Reset)
+- Social login integration (Google, Facebook, Twitter/X)
+- Property search and filtering (by city, with sorting and pagination)
+- Property details with booking system
+- Midtrans payment gateway integration
+- Manual payment proof upload
+- Property reviews after checkout
+- Profile management with photo upload
+- Transaction history with search functionality
 
-### ✅ Untuk Penyewa (Tenant)
-- Dashboard dengan statistik lengkap
-- CRUD Kategori & Properti
-- CRUD Kamar dengan pricing
-- Peak Season Rates management
-- Manajemen pesanan (konfirmasi/reject)
-- **Review Management (View & Reply)** 🆕
-- Sales Report dengan export CSV
-- Property Calendar availability
-- Filter dan pencarian advanced
+### Tenant Features
+- Dashboard with comprehensive statistics
+- Category and property management
+- Room management with dynamic pricing
+- Peak season rate configuration
+- Booking management (confirm/reject)
+- Review management (view and reply)
+- Sales reports with CSV export
+- Property availability calendar
+- Advanced filtering and search
 
-### ✅ Automasi
-- Auto-cancel order setelah 1 jam (cron job)
-- Email reminder H-1 check-in (cron job)
-- **Payment webhook handler (Midtrans)** 🆕
-- Email notifications lengkap
+### Automation
+- Auto-cancel unpaid bookings after 1 hour
+- Check-in reminder emails (H-1)
+- Midtrans payment webhook handler
+- Comprehensive email notifications
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Next.js 15 + React 19 + TypeScript 5
 - Tailwind CSS 4 + Radix UI
 - Prisma ORM + PostgreSQL
-- NextAuth v5 (with OAuth: Google, Facebook, Twitter)
+- NextAuth v5 (OAuth: Google, Facebook, Twitter)
 - Midtrans Payment Gateway
 - Nodemailer
 
-## 📋 Installation
+## Installation
 
 ### 1. Install Dependencies
 ```bash
@@ -50,18 +50,14 @@ npm install
 
 ### 2. Environment Variables
 
-The `.env` file is already configured with **Railway PostgreSQL** connection:
+Configure your `.env` file with the PostgreSQL connection:
 ```env
-DATABASE_URL="postgresql://postgres:tAlxENjUvGsPxgKSaBBzoaOCMNuKmxhU@nozomi.proxy.rlwy.net:43063/railway"
+DATABASE_URL="postgresql://postgres:password@host:port/database"
 ```
 
-**Optional Configuration:**
-- Social Login (Google, Facebook, Twitter) - See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
-- Payment Gateway (Midtrans) - See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+For social login and payment gateway setup, refer to `SETUP_GUIDE.md`.
 
-For detailed setup instructions, refer to [SETUP_GUIDE.md](./SETUP_GUIDE.md)
-
-### 3. Setup Database Schema (First time only)
+### 3. Setup Database Schema
 ```bash
 npx prisma db push
 ```
@@ -71,31 +67,12 @@ npx prisma db push
 npm run dev
 ```
 
-Aplikasi akan berjalan di `http://localhost:3000`
+Application will run at `http://localhost:3000`
 
-## 🗄️ Database Information
+## Database Schema
 
-- **Provider**: Railway PostgreSQL (Cloud)
-- **Connection**: `nozomi.proxy.rlwy.net:43063`
-- **Database**: `railway`
-- **Data Persistence**: ✅ All data persisted in cloud database
-- **Direct Access**: Use psql command or Railway CLI for database management
+Main entities: User, Tenant, Category, Property, Room, PeakSeasonRate, Booking, Review
 
-**Raw psql command:**
-```bash
-PGPASSWORD=tAlxENjUvGsPxgKSaBBzoaOCMNuKmxhU psql -h nozomi.proxy.rlwy.net -U postgres -p 43063 -d railway
-```
+## API Documentation
 
-**Railway CLI:**
-```bash
-railway connect Postgres
-```
-
-- User, Tenant, Category, Property, Room
-- PeakSeasonRate, Booking, Review
-
-## API Endpoints: 42 Total
-
-Authentication, Properties, Bookings, Reviews, Reports, Tenant Management, Cron Jobs
-
-Lihat dokumentasi lengkap di file ini.
+See `API_DOCUMENTATION.md` for complete endpoint reference.

@@ -169,7 +169,7 @@ export function BookingDialog({
               />
               {roomCount > 1 && (
                 <p className="text-sm text-blue-600 font-medium">
-                  ℹ️ {roomCount} rooms needed (capacity: {room.capacity} guests/room)
+                  Info: {roomCount} rooms needed (capacity: {room.capacity} guests/room)
                 </p>
               )}
             </div>
@@ -195,9 +195,9 @@ export function BookingDialog({
 
           {/* Availability Message */}
           {availabilityMessage && (
-            <Card className={`border-2 ${availabilityMessage.includes('✅') ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+            <Card className={`border-2 ${availabilityMessage.includes('Room is available') ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
               <CardContent className="py-4">
-                <p className={`text-center font-bold text-lg ${availabilityMessage.includes('✅') ? 'text-green-700' : 'text-red-700'}`}>
+                <p className={`text-center font-bold text-lg ${availabilityMessage.includes('Room is available') ? 'text-green-700' : 'text-red-700'}`}>
                   {availabilityMessage}
                 </p>
               </CardContent>
@@ -209,7 +209,7 @@ export function BookingDialog({
             <Card className="border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 shadow-xl">
               <CardContent className="p-6 space-y-4">
                 <h3 className="font-bold text-2xl text-slate-900 flex items-center gap-2 border-b-2 border-slate-200 pb-3">
-                  💰 Price Breakdown
+                  Price Breakdown
                 </h3>
                 
                 <div className="space-y-3">
@@ -233,7 +233,7 @@ export function BookingDialog({
                   {priceBreakdown.peakSeasonAdjustment > 0 && (
                     <div className="flex justify-between items-center text-orange-600 font-medium py-2 bg-orange-50 px-3 rounded-lg border border-orange-200">
                       <span className="flex items-center gap-2">
-                        <span className="text-xl">🔥</span>
+                        <span className="text-xl">Peak</span>
                         Peak Season Surcharge (+{priceBreakdown.peakSeasonPercentage}%)
                       </span>
                       <span className="font-bold text-lg">+{formatPrice(priceBreakdown.peakSeasonAdjustment)}</span>
@@ -263,7 +263,7 @@ export function BookingDialog({
                 </>
               ) : (
                 <>
-                  ✓ Confirm Booking - {formatPrice(priceBreakdown.total)}
+                  Confirm Booking - {formatPrice(priceBreakdown.total)}
                 </>
               )}
             </Button>

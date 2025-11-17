@@ -52,7 +52,6 @@ export default function LoginTenantPage() {
           errorMessage = result.error;
         }
         
-        console.log('🔔 Calling toast with:', { title: 'Login Gagal', description: errorMessage });
         toast({
           title: 'Login Gagal',
           description: errorMessage,

@@ -74,10 +74,10 @@ export function useBooking() {
       const data = await res.json();
 
       if (data.available) {
-        setAvailabilityMessage('✅ Room is available!');
+        setAvailabilityMessage('Room is available!');
         setPriceBreakdown(data.priceBreakdown);
       } else {
-        setAvailabilityMessage('❌ Room not available for selected dates');
+        setAvailabilityMessage('Room not available for selected dates');
         setPriceBreakdown(null);
       }
     } catch (error) {

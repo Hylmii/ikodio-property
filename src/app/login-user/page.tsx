@@ -25,23 +25,23 @@ export default function LoginUserPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    console.log('🔐 Login attempt with:', formData.email);
+    console.log('[LOGIN] Login attempt with:', formData.email);
 
     try {
-      console.log('🔐 Attempting login with:', formData.email);
+      console.log('[LOGIN] Attempting login with:', formData.email);
       const result = await signIn('user-credentials', {
         email: formData.email,
         password: formData.password,
         redirect: false,
       });
 
-      console.log('📊 SignIn result:', result);
-      console.log('📊 Result type:', typeof result);
-      console.log('📊 Has error?', result?.error ? 'YES' : 'NO');
+      console.log('[LOGIN] SignIn result:', result);
+      console.log('[LOGIN] Result type:', typeof result);
+      console.log('[LOGIN] Has error?', result?.error ? 'YES' : 'NO');
 
       if (result?.error) {
-        console.error('❌ Login error:', result.error);
-        console.error('❌ Error type:', typeof result.error);
+        console.error('[LOGIN] Login error:', result.error);
+        console.error('[LOGIN] Error type:', typeof result.error);
         
         // Check if error is about unverified email
         const isUnverifiedError = result.error.includes('belum diverifikasi');
@@ -63,7 +63,7 @@ export default function LoginUserPage() {
           errorMessage = result.error;
         }
         
-        console.log('🔔 Calling toast with:', { title: 'Login Gagal', description: errorMessage });
+        console.log('[LOGIN] Calling toast with:', { title: 'Login Gagal', description: errorMessage });
         toast({
           title: 'Login Gagal',
           description: errorMessage,
@@ -78,7 +78,7 @@ export default function LoginUserPage() {
           ) : undefined,
         });
       } else if (result?.ok) {
-        console.log('✅ Login successful');
+        console.log('[LOGIN] Login successful');
         toast({
           title: 'Login Berhasil',
           description: 'Selamat datang kembali!',
@@ -86,7 +86,7 @@ export default function LoginUserPage() {
         router.push('/profile');
         router.refresh();
       } else {
-        console.warn('⚠️ Unexpected result:', result);
+        console.warn('[LOGIN] Unexpected result:', result);
         toast({
           title: 'Error',
           description: 'Terjadi kesalahan yang tidak terduga',
@@ -94,7 +94,7 @@ export default function LoginUserPage() {
         });
       }
     } catch (error) {
-      console.error('💥 Exception during login:', error);
+      console.error('[LOGIN] Exception during login:', error);
       toast({
         title: 'Error',
         description: 'Terjadi kesalahan saat login',

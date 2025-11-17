@@ -29,10 +29,7 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('🔐 User Login Attempt:', credentials?.email);
-        
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Missing credentials');
           throw new Error('Email dan password harus diisi');
         }
 
@@ -42,27 +39,20 @@ export const authConfig: NextAuthConfig = {
           },
         });
 
-        console.log('👤 User found:', user ? 'Yes' : 'No');
-        console.log('👤 User role:', user?.role);
-
         if (!user) {
-          console.log('❌ User not found');
           throw new Error('Email atau password salah');
         }
 
         // Allow USER and ADMIN roles for user login
         if (user.role !== UserRole.USER && user.role !== UserRole.ADMIN) {
-          console.log('❌ Wrong role for user login:', user.role);
           throw new Error('Email atau password salah');
         }
 
         if (!user.password) {
-          console.log('❌ User has no password (social login only)');
           throw new Error('Akun ini menggunakan social login');
         }
 
         if (!user.isVerified) {
-          console.log('❌ User not verified');
           throw new Error('Email belum diverifikasi. Silakan cek email Anda');
         }
 
@@ -71,13 +61,13 @@ export const authConfig: NextAuthConfig = {
           user.password
         );
 
-        console.log('🔑 Password valid:', isPasswordValid);
+        console.log('[AUTH] Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
           throw new Error('Email atau password salah');
         }
 
-        console.log('✅ Login successful for:', user.email);
+        console.log('[AUTH] Login successful for:', user.email);
 
         return {
           id: user.id,
@@ -97,10 +87,7 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('🏢 Tenant Login Attempt:', credentials?.email);
-        
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Missing credentials');
           throw new Error('Email dan password harus diisi');
         }
 
@@ -111,20 +98,15 @@ export const authConfig: NextAuthConfig = {
           },
         });
 
-        console.log('👤 Tenant found:', user ? 'Yes' : 'No');
-
         if (!user) {
-          console.log('❌ Tenant not found or wrong role');
           throw new Error('Email atau password salah');
         }
 
         if (!user.password) {
-          console.log('❌ Tenant has no password (social login only)');
           throw new Error('Akun ini menggunakan social login');
         }
 
         if (!user.isVerified) {
-          console.log('❌ Tenant not verified');
           throw new Error('Email belum diverifikasi. Silakan cek email Anda');
         }
 
@@ -133,13 +115,13 @@ export const authConfig: NextAuthConfig = {
           user.password
         );
 
-        console.log('🔑 Password valid:', isPasswordValid);
+        console.log('[AUTH] Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
           throw new Error('Email atau password salah');
         }
 
-        console.log('✅ Login successful for:', user.email);
+        console.log('[AUTH] Login successful for:', user.email);
 
         return {
           id: user.id,

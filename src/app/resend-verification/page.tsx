@@ -91,13 +91,13 @@ export default function ResendVerificationPage() {
           <CardContent className="space-y-6">
             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">
               <p className="text-sm text-slate-700 dark:text-slate-300">
-                📧 Silakan cek inbox atau folder spam Anda
+                Silakan cek inbox atau folder spam Anda
               </p>
               <p className="text-sm text-slate-700 dark:text-slate-300">
-                ⏱️ Link akan kedaluwarsa dalam 1 jam
+                 Link akan kedaluwarsa dalam 1 jam
               </p>
               <p className="text-sm text-slate-700 dark:text-slate-300">
-                ✉️ Email dikirim ke: <span className="font-semibold">{email}</span>
+                Email dikirim ke: <span className="font-semibold">{email}</span>
               </p>
             </div>
 
@@ -168,7 +168,7 @@ export default function ResendVerificationPage() {
 
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
-                  💡 <span className="font-semibold">Catatan:</span> Link verifikasi akan dikirim ke email yang terdaftar dan belum diverifikasi.
+                  <span className="font-semibold">Catatan:</span> Link verifikasi akan dikirim ke email yang terdaftar dan belum diverifikasi.
                 </p>
               </div>
 

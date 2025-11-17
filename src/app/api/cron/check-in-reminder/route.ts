@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 <body>
   <div class="container">
     <div class="header">
-      <h1>🏠 Check-in Reminder</h1>
+      <h1>Check-in Reminder</h1>
     </div>
     
     <div class="content">
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
       </div>
       
       <div class="highlight">
-        <p style="margin: 0;"><strong>⏰ Check-in Time:</strong> Standard check-in starts at 2:00 PM</p>
+        <p style="margin: 0;"><strong>Check-in Time:</strong> Standard check-in starts at 2:00 PM</p>
       </div>
       
       <div class="checklist">

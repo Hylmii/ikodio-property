@@ -1,13 +1,13 @@
 # Midtrans Payment Gateway Setup Guide
 
-## 🎯 Overview
+##  Overview
 This guide will help you set up Midtrans payment gateway integration for the Ikodio Property booking platform.
 
-## 📋 Prerequisites
+##  Prerequisites
 - Email address for Midtrans account registration
 - Access to your `.env` file
 
-## 🚀 Step-by-Step Setup
+##  Step-by-Step Setup
 
 ### Step 1: Create Midtrans Sandbox Account
 
@@ -88,7 +88,7 @@ npm run dev
 - **Expiry Date**: Any future date (e.g., `12/25`)
 - **OTP/3D Secure**: `112233`
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Issue: "Midtrans credentials not configured"
 **Solution**: Make sure you've updated the `.env` file with your actual Midtrans keys and restarted the dev server.
@@ -102,7 +102,7 @@ npm run dev
 ### Issue: "Invalid signature" in webhook
 **Solution**: Make sure your `MIDTRANS_SERVER_KEY` is correct and matches your Midtrans account.
 
-## 📚 Webhook Configuration (Optional for Testing)
+##  Webhook Configuration (Optional for Testing)
 
 For production or if you want to test webhooks locally:
 
@@ -118,21 +118,21 @@ ngrok http 3000
 3. For production:
    - Set: `https://your-domain.com/api/midtrans/notification`
 
-## 🎨 Payment Methods Available in Sandbox
+##  Payment Methods Available in Sandbox
 
 - Credit/Debit Cards (Visa, Mastercard, JCB, Amex)
 - Bank Transfer (BCA, BNI, Mandiri, Permata)
 - E-wallets (GoPay, ShopeePay, QRIS)
 - Convenience Stores (Alfamart, Indomaret)
 
-## 📖 Additional Resources
+##  Additional Resources
 
 - **Midtrans Documentation**: https://docs.midtrans.com/
 - **Sandbox Dashboard**: https://dashboard.sandbox.midtrans.com/
 - **API Reference**: https://api-docs.midtrans.com/
 - **Test Credentials**: https://docs.midtrans.com/en/technical-reference/sandbox-test
 
-## ✅ Verification Checklist
+##  Verification Checklist
 
 - [ ] Midtrans sandbox account created
 - [ ] Server Key and Client Key obtained
@@ -142,16 +142,16 @@ ngrok http 3000
 - [ ] Test payment completed successfully
 - [ ] Booking status updated to WAITING_CONFIRMATION after payment
 
-## 🚨 Important Notes
+##  Important Notes
 
-⚠️ **Never commit your `.env` file to Git!** Your API keys should remain secret.
+ **Never commit your `.env` file to Git!** Your API keys should remain secret.
 
-⚠️ **Sandbox vs Production**: 
+ **Sandbox vs Production**: 
 - Sandbox keys start with `SB-Mid-...`
 - Production keys start with `Mid-...`
 - Always use sandbox for testing!
 
-⚠️ **For Production Deployment**:
+ **For Production Deployment**:
 1. Create a production Midtrans account at https://dashboard.midtrans.com/
 2. Get production keys
 3. Update `.env` with production keys

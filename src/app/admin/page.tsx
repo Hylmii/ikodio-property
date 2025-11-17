@@ -43,19 +43,11 @@ export default function AdminPage() {
   useEffect(() => {
     if (status === 'loading') return;
     
-    console.log('🔍 Admin Page - Status:', status);
-    console.log('🔍 Admin Page - Session:', session);
-    console.log('🔍 Admin Page - User:', session?.user);
-    console.log('🔍 Admin Page - Role:', session?.user?.role);
-    
-    // Check if user is logged in and is an admin
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      console.log('❌ Not admin, redirecting to login');
+    if (!session?.user || session.user.role !== UserRole.ADMIN) {
       router.push('/login-user');
       return;
     }
 
-    console.log('✅ Admin authenticated, fetching users');
     fetchUsers();
   }, [session, status, router]);
 
@@ -140,15 +132,15 @@ export default function AdminPage() {
     );
   }
 
-  if (!session?.user || session.user.role !== 'ADMIN') {
+  if (!session?.user || session.user.role !== UserRole.ADMIN) {
     return null;
   }
 
   const stats = {
     total: users.length,
     verified: users.filter((u) => u.isVerified).length,
-    users: users.filter((u) => u.role === 'USER').length,
-    tenants: users.filter((u) => u.role === 'TENANT').length,
+    users: users.filter((u) => u.role === UserRole.USER).length,
+    tenants: users.filter((u) => u.role === UserRole.TENANT).length,
   };
 
   return (

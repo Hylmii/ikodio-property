@@ -30,69 +30,69 @@ function VerifyEmailPageContent() {
   }, [token]);
 
   const verifyToken = async () => {
-    console.log('🔍 [CLIENT] Starting token verification...');
-    console.log('🔍 [CLIENT] Token:', token?.substring(0, 20) + '...');
+    console.log('[CLIENT] Starting token verification...');
+    console.log('[CLIENT] Token:', token?.substring(0, 20) + '...');
     
     try {
       const response = await fetch(`/api/auth/verify-email?token=${token}`);
       const data = await response.json();
 
-      console.log('📊 [CLIENT] Response status:', response.status);
-      console.log('📊 [CLIENT] Response data:', data);
+      console.log('[CLIENT] Response status:', response.status);
+      console.log('[CLIENT] Response data:', data);
 
       if (response.ok) {
-        console.log('✅ [CLIENT] Token is valid');
+        console.log('[CLIENT] Token is valid');
         setEmail(data.data.email);
         if (data.data.isVerified) {
-          console.log('ℹ️  [CLIENT] User already verified');
+          console.log('[CLIENT] User already verified');
           setStatus('success');
         } else {
-          console.log('📝 [CLIENT] User needs to set password, showing form');
+          console.log('[CLIENT] User needs to set password, showing form');
           // Status stays as 'loading' to show password form
         }
       } else {
-        console.error('❌ [CLIENT] Token validation failed:', data.error);
+        console.error('[CLIENT] Token validation failed:', data.error);
         if (response.status === 400 && data.error?.includes('sudah diverifikasi')) {
-          console.log('ℹ️  [CLIENT] User already verified (from error)');
+          console.log('[CLIENT] User already verified (from error)');
           setStatus('success');
         } else if (response.status === 410 || data.error?.includes('kadaluarsa')) {
-          console.log('⏰ [CLIENT] Token expired');
+          console.log('[CLIENT] Token expired');
           setStatus('expired');
         } else {
-          console.log('❌ [CLIENT] Invalid token');
+          console.log('[CLIENT] Invalid token');
           setStatus('error');
         }
       }
     } catch (error) {
-      console.error('💥 [CLIENT] Exception during verification:', error);
+      console.error('[CLIENT] Exception during verification:', error);
       setStatus('error');
     }
   };
 
   const handleSubmit = async () => {
-    console.log('📝 [CLIENT] Starting password submission...');
+    console.log('[CLIENT] Starting password submission...');
     
     if (!password || !confirmPassword) {
-      console.log('❌ [CLIENT] Missing password fields');
+      console.log('[CLIENT] Missing password fields');
       toast({ title: 'Error', description: 'Semua field harus diisi', variant: 'destructive' });
       return;
     }
 
     if (password !== confirmPassword) {
-      console.log('❌ [CLIENT] Password mismatch');
+      console.log('[CLIENT] Password mismatch');
       toast({ title: 'Error', description: 'Password tidak cocok', variant: 'destructive' });
       return;
     }
 
     if (password.length < 8) {
-      console.log('❌ [CLIENT] Password too short');
+      console.log('[CLIENT] Password too short');
       toast({ title: 'Error', description: 'Password minimal 8 karakter', variant: 'destructive' });
       return;
     }
 
-    console.log('✅ [CLIENT] Password validation passed');
-    console.log('📤 [CLIENT] Sending POST request...');
-    console.log('📤 [CLIENT] Data:', { token: token?.substring(0, 10) + '...', passwordLength: password.length, confirmPasswordLength: confirmPassword.length });
+    console.log('[CLIENT] Password validation passed');
+    console.log('[CLIENT] Sending POST request...');
+    console.log('[CLIENT] Data:', { token: token?.substring(0, 10) + '...', passwordLength: password.length, confirmPasswordLength: confirmPassword.length });
     setIsSubmitting(true);
 
     try {
@@ -104,23 +104,23 @@ function VerifyEmailPageContent() {
 
       const data = await response.json();
       
-      console.log('📊 [CLIENT] POST Response status:', response.status);
-      console.log('📊 [CLIENT] POST Response data:', data);
+      console.log('[CLIENT] POST Response status:', response.status);
+      console.log('[CLIENT] POST Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Verifikasi gagal');
       }
 
-      console.log('✅ [CLIENT] Verification successful!');
+      console.log('[CLIENT] Verification successful!');
       toast({ title: 'Berhasil', description: 'Email berhasil diverifikasi!' });
       setStatus('success');
 
-      console.log('🔄 [CLIENT] Redirecting to login in 2 seconds...');
+      console.log('[CLIENT] Redirecting to login in 2 seconds...');
       setTimeout(() => {
         router.push('/login-user');
       }, 2000);
     } catch (error: any) {
-      console.error('❌ [CLIENT] Verification failed:', error);
+      console.error('[CLIENT] Verification failed:', error);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
       setStatus('error');
     } finally {

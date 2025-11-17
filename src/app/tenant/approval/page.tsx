@@ -244,7 +244,7 @@ export default function TenantApprovalPage() {
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline text-sm"
                           >
-                            📎 Lihat Bukti Pembayaran
+                            Lihat Bukti Pembayaran
                           </a>
                         </div>
                       )}

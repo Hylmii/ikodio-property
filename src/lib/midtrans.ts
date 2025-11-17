@@ -60,7 +60,6 @@ export async function createMidtransTransaction(params: MidtransTransactionParam
       redirectUrl: transaction.redirect_url,
     };
   } catch (error: any) {
-    console.error('Midtrans create transaction error:', error);
     return {
       success: false,
       error: error.message || 'Failed to create payment transaction',
@@ -76,7 +75,6 @@ export async function checkTransactionStatus(orderId: string) {
       data: status,
     };
   } catch (error: any) {
-    console.error('Midtrans check status error:', error);
     return {
       success: false,
       error: error.message || 'Failed to check transaction status',
