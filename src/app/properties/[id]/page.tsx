@@ -237,34 +237,41 @@ export default function PropertyDetailPage({
     
     setIsBooking(true);
     try {
+      const payload = {
+        roomId: selectedRoom.id,
+        checkInDate: bookingDates.checkIn,
+        checkOutDate: bookingDates.checkOut,
+        numberOfGuests: guestCount,
+      };
+
+      console.log('Creating booking with payload:', payload);
+
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomId: selectedRoom.id,
-          checkInDate: bookingDates.checkIn,
-          checkOutDate: bookingDates.checkOut,
-          numberOfGuests: guestCount,
-        }),
+        body: JSON.stringify(payload),
       });
       
       const data = await res.json();
+      console.log('Booking response:', data);
       
       if (!res.ok) {
+        console.error('Booking failed:', data);
         throw new Error(data.error || 'Booking failed');
       }
       
       toast({ 
-        title: 'Success', 
-        description: 'Booking created! Please upload payment proof.' 
+        title: 'Berhasil', 
+        description: 'Booking berhasil dibuat! Silakan upload bukti pembayaran.' 
       });
       
       // Redirect to payment page
       router.push(`/bookings/${data.data.id}/payment`);
     } catch (error: any) {
+      console.error('Booking error:', error);
       toast({ 
         title: 'Error', 
-        description: error.message || 'Booking failed', 
+        description: error.message || 'Gagal membuat booking. Silakan coba lagi.', 
         variant: 'destructive' 
       });
     } finally {

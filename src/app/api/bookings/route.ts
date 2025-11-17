@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'USER') {
+      console.log('Unauthorized booking attempt - user role:', session?.user?.role);
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Fitur pemesanan hanya untuk pengguna (user)' },
         { status: 401 }
@@ -94,6 +95,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!session.user.isVerified) {
+      console.log('Unverified user attempting booking:', session.user.email);
       return NextResponse.json(
         { success: false, error: 'Email Anda belum diverifikasi' },
         { status: 403 }
@@ -101,6 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    console.log('Booking request body:', JSON.stringify(body, null, 2));
     
     const validationData = {
       ...body,
@@ -108,10 +111,22 @@ export async function POST(req: NextRequest) {
       checkOutDate: new Date(body.checkOutDate),
     };
 
+    console.log('Validation data:', {
+      roomId: validationData.roomId,
+      checkInDate: validationData.checkInDate.toISOString(),
+      checkOutDate: validationData.checkOutDate.toISOString(),
+      numberOfGuests: validationData.numberOfGuests,
+    });
+
     const validation = bookingSchema.safeParse(validationData);
     if (!validation.success) {
+      console.error('Booking validation failed:', validation.error.issues);
       return NextResponse.json(
-        { success: false, error: validation.error.issues[0].message },
+        { 
+          success: false, 
+          error: validation.error.issues[0].message,
+          details: validation.error.issues 
+        },
         { status: 400 }
       );
     }
