@@ -9,6 +9,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    console.log('Fetching property:', id);
+
     const property = await prisma.property.findUnique({
       where: { id },
       include: {
@@ -66,11 +68,14 @@ export async function GET(
     });
 
     if (!property) {
+      console.log('Property not found:', id);
       return NextResponse.json(
         { success: false, error: 'Property tidak ditemukan' },
         { status: 404 }
       );
     }
+
+    console.log('Property found, fetching avg rating...');
 
     const avgRating = await prisma.review.aggregate({
       where: { propertyId: id },
@@ -78,6 +83,8 @@ export async function GET(
         rating: true,
       },
     });
+
+    console.log('Property fetch complete:', { id, name: property.name, roomsCount: property.rooms.length });
 
     return NextResponse.json({
       success: true,
@@ -87,10 +94,16 @@ export async function GET(
         totalReviews: property._count.reviews,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get property error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { success: false, error: 'Terjadi kesalahan saat mengambil property' },
+      { 
+        success: false, 
+        error: 'Terjadi kesalahan saat mengambil property',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
