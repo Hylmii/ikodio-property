@@ -6,9 +6,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { roomId, checkIn, checkOut, numberOfGuests } = body;
 
+    console.log('Check availability request:', { roomId, checkIn, checkOut, numberOfGuests });
+
     if (!roomId || !checkIn || !checkOut) {
+      console.error('Missing required fields:', { roomId, checkIn, checkOut });
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields: roomId, checkIn, checkOut' },
         { status: 400 }
       );
     }
@@ -16,7 +19,21 @@ export async function POST(req: NextRequest) {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
+    console.log('Parsed dates:', {
+      checkInDate: checkInDate.toISOString(),
+      checkOutDate: checkOutDate.toISOString(),
+    });
+
+    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+      console.error('Invalid date format:', { checkIn, checkOut });
+      return NextResponse.json(
+        { success: false, error: 'Invalid date format' },
+        { status: 400 }
+      );
+    }
+
     if (checkInDate >= checkOutDate) {
+      console.error('Invalid date range:', { checkInDate, checkOutDate });
       return NextResponse.json(
         { success: false, error: 'Check-out must be after check-in' },
         { status: 400 }
@@ -43,11 +60,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!room) {
+      console.error('Room not found:', roomId);
       return NextResponse.json(
         { success: false, error: 'Room not found' },
         { status: 404 }
       );
     }
+
+    console.log('Room found:', { id: room.id, name: room.name, capacity: room.capacity, basePrice: room.basePrice });
 
     // Check for overlapping bookings
     const overlappingBookings = await prisma.booking.findMany({
@@ -126,10 +146,15 @@ export async function POST(req: NextRequest) {
         roomCount,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Check availability error:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { 
+        success: false, 
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
