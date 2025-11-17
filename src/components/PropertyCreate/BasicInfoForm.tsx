@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getCoordinates } from "@/lib/utils/geocoding";
 import {
   Select,
@@ -13,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
 
 interface BasicInfoFormProps {
   name: string;
@@ -52,6 +58,28 @@ export function BasicInfoForm({
   onLongitudeChange,
 }: BasicInfoFormProps) {
   const [isLoadingGeo, setIsLoadingGeo] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      const response = await fetch('/api/categories?limit=100');
+      const data = await response.json();
+      
+      if (data.success) {
+        setCategories(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
   
   const handleGetCoordinates = async () => {
     if (!city) {
@@ -115,15 +143,25 @@ export function BasicInfoForm({
           <Label htmlFor="category" className="text-slate-700 dark:text-slate-300 font-medium">
             Kategori *
           </Label>
-          <Select value={category || undefined} onValueChange={onCategoryChange}>
+          <Select 
+            value={category || undefined} 
+            onValueChange={onCategoryChange}
+            disabled={isLoadingCategories}
+          >
             <SelectTrigger className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
-              <SelectValue placeholder="Pilih kategori" />
+              <SelectValue placeholder={isLoadingCategories ? "Loading..." : "Pilih kategori"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="HOTEL">Hotel</SelectItem>
-              <SelectItem value="VILLA">Villa</SelectItem>
-              <SelectItem value="APARTMENT">Apartment</SelectItem>
-              <SelectItem value="GUESTHOUSE">Guesthouse</SelectItem>
+              {categories.length === 0 && !isLoadingCategories && (
+                <div className="text-sm text-slate-500 p-2">
+                  Tidak ada kategori. Buat kategori terlebih dahulu.
+                </div>
+              )}
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
