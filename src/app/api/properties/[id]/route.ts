@@ -115,9 +115,12 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    console.log('Updating property:', id);
+
     const session = await auth();
     
     if (!session || !session.user || session.user.role !== 'TENANT') {
+      console.log('Unauthorized PUT attempt - role:', session?.user?.role);
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -129,6 +132,7 @@ export async function PUT(
     });
 
     if (!property) {
+      console.log('Property not found for update:', id);
       return NextResponse.json(
         { success: false, error: 'Property tidak ditemukan' },
         { status: 404 }
@@ -136,16 +140,30 @@ export async function PUT(
     }
 
     if (property.tenantId !== session.user.id) {
+      console.log('Forbidden: User does not own property');
       return NextResponse.json(
         { success: false, error: 'Anda tidak memiliki akses untuk mengubah property ini' },
         { status: 403 }
       );
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      const rawBody = await req.text();
+      console.log('Raw request body:', rawBody.substring(0, 200));
+      body = JSON.parse(rawBody);
+      console.log('Parsed body keys:', Object.keys(body));
+    } catch (parseError: any) {
+      console.error('JSON parse error:', parseError.message);
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON format in request body' },
+        { status: 400 }
+      );
+    }
     
     const validation = propertySchema.safeParse(body);
     if (!validation.success) {
+      console.error('Validation failed:', validation.error.issues);
       return NextResponse.json(
         { success: false, error: validation.error.issues[0].message },
         { status: 400 }
@@ -154,6 +172,16 @@ export async function PUT(
 
     const { name, description, address, city, province, categoryId, latitude, longitude } = validation.data;
     const images = body.images || property.images;
+
+    console.log('Updating property with data:', {
+      name,
+      city,
+      province,
+      categoryId,
+      latitude,
+      longitude,
+      imagesCount: images?.length || 0,
+    });
 
     const updatedProperty = await prisma.property.update({
       where: { id },
@@ -179,15 +207,23 @@ export async function PUT(
       },
     });
 
+    console.log('Property updated successfully:', id);
+
     return NextResponse.json({
       success: true,
       message: 'Property berhasil diupdate',
       data: updatedProperty,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Update property error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { success: false, error: 'Terjadi kesalahan saat mengupdate property' },
+      { 
+        success: false, 
+        error: 'Terjadi kesalahan saat mengupdate property',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
