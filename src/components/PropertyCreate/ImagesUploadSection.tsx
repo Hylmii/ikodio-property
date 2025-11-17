@@ -66,6 +66,7 @@ export function ImagesUploadSection({ images, onChange }: ImagesUploadSectionPro
                 src={image}
                 alt={`Property ${index + 1}`}
                 fill
+                unoptimized
                 className="object-cover"
               />
             </div>

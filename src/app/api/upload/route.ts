@@ -52,8 +52,14 @@ export async function POST(req: NextRequest) {
       await mkdir(uploadDir, { recursive: true });
     }
 
+    // Sanitize filename: remove spaces and special chars
+    const sanitizedName = file.name
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9.-]/g, '') // Remove special characters
+      .toLowerCase();
+
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const filename = `${uniqueSuffix}-${file.name}`;
+    const filename = `${uniqueSuffix}-${sanitizedName}`;
     const filepath = join(uploadDir, filename);
 
     await writeFile(filepath, buffer);
