@@ -103,17 +103,34 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    console.log('Received property data:', JSON.stringify(body, null, 2));
     
     const validation = propertySchema.safeParse(body);
     if (!validation.success) {
+      console.error('Validation error:', validation.error.issues);
       return NextResponse.json(
-        { success: false, error: validation.error.issues[0].message },
+        { 
+          success: false, 
+          error: validation.error.issues[0].message,
+          details: validation.error.issues 
+        },
         { status: 400 }
       );
     }
 
     const { name, description, address, city, province, categoryId, latitude, longitude } = validation.data;
     const images = body.images || [];
+
+    console.log('Creating property with validated data:', {
+      name,
+      city,
+      province,
+      categoryId,
+      tenantId: session.user.id,
+      latitude,
+      longitude,
+      imagesCount: images.length,
+    });
 
     const property = await prisma.property.create({
       data: {
@@ -138,6 +155,8 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    console.log('Property created successfully:', property.id);
 
     return NextResponse.json({
       success: true,

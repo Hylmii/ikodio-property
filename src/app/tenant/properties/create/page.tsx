@@ -43,44 +43,70 @@ export default function CreatePropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !description || !category || !address || !city || !province || !latitude || !longitude) {
-      toast({ title: 'Error', description: 'Semua field harus diisi', variant: 'destructive' });
+    // Validasi field wajib
+    if (!name || !description || !category || !address || !city || !province) {
+      toast({ title: 'Error', description: 'Semua field informasi dasar harus diisi', variant: 'destructive' });
+      return;
+    }
+
+    // Validasi latitude longitude
+    if (!latitude || !longitude) {
+      toast({ title: 'Error', description: 'Latitude dan Longitude harus diisi', variant: 'destructive' });
+      return;
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      toast({ title: 'Error', description: 'Latitude dan Longitude harus berupa angka yang valid', variant: 'destructive' });
+      return;
+    }
+
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      toast({ title: 'Error', description: 'Koordinat tidak valid. Lat: -90 s/d 90, Lng: -180 s/d 180', variant: 'destructive' });
       return;
     }
 
     if (images.length === 0) {
-      toast({ title: 'Error', description: 'Upload minimal 1 foto', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Upload minimal 1 foto properti', variant: 'destructive' });
       return;
     }
 
     setIsLoading(true);
 
     try {
+      const payload = {
+        name: name.trim(),
+        description: description.trim(),
+        categoryId: category,
+        address: address.trim(),
+        city: city.trim(),
+        province: province.trim(),
+        latitude: lat,
+        longitude: lng,
+        images,
+      };
+
+      console.log('Submitting property:', payload);
+
       const response = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          description,
-          categoryId: category,
-          address,
-          city,
-          province,
-          latitude: parseFloat(latitude),
-          longitude: parseFloat(longitude),
-          images,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        console.error('API Error:', data);
         throw new Error(data.error || 'Gagal membuat properti');
       }
 
       toast({ title: 'Berhasil', description: 'Properti berhasil dibuat' });
       router.push('/tenant/properties');
     } catch (error: any) {
+      console.error('Submit error:', error);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
