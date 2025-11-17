@@ -26,7 +26,7 @@ export default function CreatePropertyPage() {
   const [category, setCategory] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
-  const [postalCode, setPostalCode] = useState('');
+  const [province, setProvince] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [facilities, setFacilities] = useState<string[]>([]);
@@ -43,7 +43,7 @@ export default function CreatePropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !description || !category || !address || !city || !postalCode || !latitude || !longitude) {
+    if (!name || !description || !category || !address || !city || !province || !latitude || !longitude) {
       toast({ title: 'Error', description: 'Semua field harus diisi', variant: 'destructive' });
       return;
     }
@@ -62,13 +62,12 @@ export default function CreatePropertyPage() {
         body: JSON.stringify({
           name,
           description,
-          category,
+          categoryId: category,
           address,
           city,
-          postalCode,
+          province,
           latitude: parseFloat(latitude),
           longitude: parseFloat(longitude),
-          facilities,
           images,
         }),
       });
@@ -126,7 +125,7 @@ export default function CreatePropertyPage() {
             category={category}
             address={address}
             city={city}
-            postalCode={postalCode}
+            province={province}
             latitude={latitude}
             longitude={longitude}
             onNameChange={setName}
@@ -134,7 +133,7 @@ export default function CreatePropertyPage() {
             onCategoryChange={setCategory}
             onAddressChange={setAddress}
             onCityChange={setCity}
-            onPostalCodeChange={setPostalCode}
+            onProvinceChange={setProvince}
             onLatitudeChange={setLatitude}
             onLongitudeChange={setLongitude}
           />

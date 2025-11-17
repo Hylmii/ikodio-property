@@ -2,6 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { MapPin, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { getCoordinates } from "@/lib/utils/geocoding";
 import {
   Select,
   SelectContent,
@@ -16,7 +20,7 @@ interface BasicInfoFormProps {
   category: string;
   address: string;
   city: string;
-  postalCode: string;
+  province: string;
   latitude: string;
   longitude: string;
   onNameChange: (value: string) => void;
@@ -24,7 +28,7 @@ interface BasicInfoFormProps {
   onCategoryChange: (value: string) => void;
   onAddressChange: (value: string) => void;
   onCityChange: (value: string) => void;
-  onPostalCodeChange: (value: string) => void;
+  onProvinceChange: (value: string) => void;
   onLatitudeChange: (value: string) => void;
   onLongitudeChange: (value: string) => void;
 }
@@ -35,7 +39,7 @@ export function BasicInfoForm({
   category,
   address,
   city,
-  postalCode,
+  province,
   latitude,
   longitude,
   onNameChange,
@@ -43,10 +47,34 @@ export function BasicInfoForm({
   onCategoryChange,
   onAddressChange,
   onCityChange,
-  onPostalCodeChange,
+  onProvinceChange,
   onLatitudeChange,
   onLongitudeChange,
 }: BasicInfoFormProps) {
+  const [isLoadingGeo, setIsLoadingGeo] = useState(false);
+  
+  const handleGetCoordinates = async () => {
+    if (!city) {
+      alert('Silakan isi kota terlebih dahulu');
+      return;
+    }
+    
+    setIsLoadingGeo(true);
+    try {
+      const result = await getCoordinates(city, province || 'Indonesia');
+      if (result) {
+        onLatitudeChange(result.latitude.toString());
+        onLongitudeChange(result.longitude.toString());
+      } else {
+        alert('Gagal mendapatkan koordinat. Silakan isi manual.');
+      }
+    } catch (error) {
+      alert('Terjadi kesalahan saat mendapatkan koordinat');
+    } finally {
+      setIsLoadingGeo(false);
+    }
+  };
+  
   return (
     <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
       <CardHeader className="pb-4">
@@ -127,14 +155,14 @@ export function BasicInfoForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="postalCode" className="text-slate-700 dark:text-slate-300 font-medium">
-              Kode Pos *
+            <Label htmlFor="province" className="text-slate-700 dark:text-slate-300 font-medium">
+              Provinsi *
             </Label>
             <Input
-              id="postalCode"
-              placeholder="80571"
-              value={postalCode}
-              onChange={(e) => onPostalCodeChange(e.target.value)}
+              id="province"
+              placeholder="Bali"
+              value={province}
+              onChange={(e) => onProvinceChange(e.target.value)}
               className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
               required
             />
@@ -171,6 +199,27 @@ export function BasicInfoForm({
               required
             />
           </div>
+        </div>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            onClick={handleGetCoordinates}
+            disabled={isLoadingGeo || !city}
+            variant="outline"
+            className="gap-2"
+          >
+            {isLoadingGeo ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Mengambil koordinat...
+              </>
+            ) : (
+              <>
+                <MapPin className="h-4 w-4" />
+                Ambil Koordinat Otomatis
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>

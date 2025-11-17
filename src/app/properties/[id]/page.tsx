@@ -351,12 +351,12 @@ export default function PropertyDetailPage({
 
   const loadCalendarPrices = async (month: Date, roomId: string) => {
     setIsLoadingCalendar(true);
+    setCalendarPrices({});
     try {
       const res = await fetch(
         `/api/rooms/${roomId}/calendar?month=${month.toISOString()}`
       );
       const response = await res.json();
-      // API returns { success: true, data: {...} }
       const calendarData = response.data || response;
       setCalendarPrices(calendarData);
     } catch (error) {
@@ -365,6 +365,7 @@ export default function PropertyDetailPage({
         description: 'Failed to load calendar', 
         variant: 'destructive' 
       });
+      setCalendarPrices({});
     } finally {
       setIsLoadingCalendar(false);
     }
@@ -372,6 +373,7 @@ export default function PropertyDetailPage({
 
   useEffect(() => {
     if (selectedRoomId) {
+      setCalendarPrices({});
       loadCalendarPrices(selectedMonth, selectedRoomId);
     }
   }, [selectedMonth, selectedRoomId]);

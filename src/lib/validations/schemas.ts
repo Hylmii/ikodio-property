@@ -15,10 +15,11 @@ export const registerTenantSchema = z.object({
 
 export const setPasswordSchema = z.object({
   password: z.string()
-    .min(8, 'Password minimal 8 karakter')
+    .min(6, 'Password minimal 6 karakter')
     .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf besar')
     .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
-    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka'),
+    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password harus mengandung minimal 1 simbol (!@#$%^&* dll)'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Password tidak cocok',
@@ -37,10 +38,11 @@ export const resetPasswordRequestSchema = z.object({
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Token tidak valid'),
   password: z.string()
-    .min(8, 'Password minimal 8 karakter')
+    .min(6, 'Password minimal 6 karakter')
     .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf besar')
     .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
-    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka'),
+    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password harus mengandung minimal 1 simbol (!@#$%^&* dll)'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Password tidak cocok',
@@ -56,10 +58,11 @@ export const updateProfileSchema = z.object({
 export const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Password saat ini wajib diisi'),
   newPassword: z.string()
-    .min(8, 'Password minimal 8 karakter')
+    .min(6, 'Password minimal 6 karakter')
     .regex(/[A-Z]/, 'Password harus mengandung minimal 1 huruf besar')
     .regex(/[a-z]/, 'Password harus mengandung minimal 1 huruf kecil')
-    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka'),
+    .regex(/[0-9]/, 'Password harus mengandung minimal 1 angka')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password harus mengandung minimal 1 simbol (!@#$%^&* dll)'),
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: 'Password tidak cocok',
